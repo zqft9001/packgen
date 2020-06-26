@@ -271,8 +271,6 @@ foreach( $rarity as $item ){
 		}
 
 		if( $help == "yes" ){
-			echo "timeshifted: ".$timeshifted."\n";
-			echo "frameeffect: ".$frameeffect."\n";
 			echo "DGM Land Slot Override - ".$card["name"];
 			echo "\n";
 		}
@@ -296,8 +294,6 @@ foreach( $rarity as $item ){
 		}
 
 		if( $help == "yes" ){
-			echo "timeshifted: ".$timeshifted."\n";
-			echo "frameeffect: ".$frameeffect."\n";
 			echo $cnd["rarity"]." - ".$card["name"];
 			echo "\n";
 		}
