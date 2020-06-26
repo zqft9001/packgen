@@ -31,10 +31,12 @@ $set = $_GET["set"];
 $ptype = $_GET["ptype"];
 //type of pack.
 // ori - original rarity (default)
-// oar - oops all rares
-// std - "standard" 15 card pack
-// pau - all commons
-// unc - all uncommons
+// r - oops all rares
+// cur/curm - "standard" 15 card pack, curm has mythics
+// cu - only commons and uncommons
+// c - all commons
+// u - all uncommons
+// m - all mythics
 
 $lands = $_GET["lands"];
 //attempt lands in pack
@@ -51,9 +53,7 @@ if($dupesflag == "yes"){
 $custom = $_GET["custom"];
 //wacky packs
 //kami - all legendary cards, rarity ignored, set ignored, 15 card pack.
-//gold - all rare + mythic cards, set ignored, 15 card pack.
 //color - grabs only cards of a specific color (from set if specified)
-
 
 //define array for adding cards to a pack
 $pack = array();
@@ -97,17 +97,26 @@ while ($row = $result->fetch_assoc()){
 switch($ptype){
 case "ori":
 	break;
-case "oar":
-	$rarity = $oarrarity;
+case "m":
+	$rarity = $mrarity;
 	break;
-case "std":
-	$rarity = $stdrarity;
+case "r":
+	$rarity = $rrarity;
 	break;
-case "pau":
-	$rarity = $paurarity;
+case "curm":
+	$rarity = $curmrarity;
 	break;
-case "unc":
-	$rarity = $uncrarity;
+case "cur":
+	$rarity = $currarity;
+	break;
+case "cu":
+	$rarity = $curarity;
+	break;
+case "c":
+	$rarity = $crarity;
+	break;
+case "u":
+	$rarity = $urarity;
 	break;
 default:
 	break;
