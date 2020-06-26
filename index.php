@@ -390,9 +390,9 @@ foreach( $rarity as $item ){
 			}
 		} else {
 
-			$card = getcard($cnd);
 			$cnd["frameEffect"] = null;
 			$cnd["noframeEffect"] = 1;
+			$card = getcard($cnd);
 			while(in_array($card, $pack, true) && $nodupe){
 				$card = getcard($cnd);
 			}
