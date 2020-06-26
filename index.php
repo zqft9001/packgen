@@ -313,6 +313,69 @@ foreach( $rarity as $item ){
 
 	}
 
+	//grab draft matters cards for conspiracy 1, grab other cards for conspiracy 1
+	//this is significantly less elegant than CN2, but there's no frameEffect to use in CNS. 
+	if($cnd["set"] == "CNS"){
+
+		if($cnd["rarity"] == "draft-matters"){
+			$cnd["rarity"] =  raritygenerate("curm");
+			$card = getcard($cnd);
+
+			while((in_array($card, $pack, true) && $nodupe) or ($card["type"] != "Conspiracy" and !in_array($card["number"], range(53, 65)))){
+				$card = getcard($cnd);			
+			}
+		} else {
+
+			$card = getcard($cnd);
+			while((in_array($card, $pack, true) && $nodupe) or ($card["type"] == "Conspiracy" or in_array($card["number"], range(53, 65)))){
+				$card = getcard($cnd);
+			}
+		}
+
+		if( $help == "yes" ){
+			echo $cnd["rarity"]." - ".$card["name"];
+			echo "\n";
+		}
+
+		if(strlen($card["name"])>0){
+			$pack[] = $card;
+		}
+
+		continue;
+	}
+	
+	//Grab draft matters cards for conspiracy 2, grab other cards for conspiracy 2
+	if($cnd["set"] == "CN2"){
+
+		if($cnd["rarity"] == "draft-matters"){
+			$cnd["rarity"] =  raritygenerate("curm");
+			$cnd["frameEffect"] = "draft";
+			$card = getcard($cnd);
+
+			while(in_array($card, $pack, true) && $nodupe){
+				$card = getcard($cnd);			
+			}
+		} else {
+
+			$card = getcard($cnd);
+			$cnd["frameEffect"] = null;
+			$cnd["noframeEffect"] = 1;
+			while(in_array($card, $pack, true) && $nodupe){
+				$card = getcard($cnd);
+			}
+		}
+
+		if( $help == "yes" ){
+			echo $cnd["rarity"]." - ".$card["name"];
+			echo "\n";
+		}
+
+		if(strlen($card["name"])>0){
+			$pack[] = $card;
+		}
+
+		continue;
+	}
 
 	//Grab draft matters cards for conspiracy 2, grab other cards for conspiracy 2
 	if($cnd["set"] == "CN2"){
