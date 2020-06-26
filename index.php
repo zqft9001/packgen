@@ -314,8 +314,8 @@ foreach( $rarity as $item ){
 	}
 
 
-	//Grab draft matters cards for conspiracy, grab other cards for conspiracy
-	if($cnd["set"] == "CNS" or $cnd["set"] == "CN2"){
+	//Grab draft matters cards for conspiracy 2, grab other cards for conspiracy 2
+	if($cnd["set"] == "CN2"){
 
 		if($cnd["rarity"] == "draft-matters"){
 			$cnd["rarity"] =  raritygenerate("curm");
