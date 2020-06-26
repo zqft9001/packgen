@@ -155,7 +155,7 @@ foreach( $rarity as $item ){
 	$cnd["basic"] = null;
 	$cnd["name"] = null;
 
-	if($item == "marketing"){
+	if($cnd["rarity"] == "marketing"){
 		//eventually we'll put the phone cards in here. Somehow.
 		continue;
 	}
@@ -163,7 +163,7 @@ foreach( $rarity as $item ){
 	//Double sided cards are a nightmare nightmare nightmare nightmare nightmare
 	if($set == "SOI" or $set == "ISD" or $set == "EMN"){
 
-		if( $item == ['common', 'double faced rare', 'double faced mythic rare']){
+		if( $cnd["rarity"] == ['common', 'double faced rare', 'double faced mythic rare']){
 			if(rand(1,20) == 1){
 				if(rand(1,8) == 1){
 					$cnd["rarity"] = "mythic";
@@ -177,18 +177,18 @@ foreach( $rarity as $item ){
 
 		}
 
-		if( $item == ['double faced common', 'double faced uncommon'] ){
+		if( $cnd["rarity"] == ['double faced common', 'double faced uncommon'] ){
 			$cnd["rarity"] = raritygenerate("cu");
 			$cnd["frameEffect"] = "dfc";
 		}
 
-		if( $item == "double faced" ){
+		if( $cnd["rarity"] == "double faced" ){
 
 			$cnd["frameEffect"] = "dfc";
 			$cnd["rarity"] = raritygenerate("curm");
 		}
 
-		if( $item == ['land', 'checklist']){
+		if( $cnd["rarity"] == ['land', 'checklist']){
 			$cnd["rarity"] = "land";
 		}
 
@@ -200,12 +200,12 @@ foreach( $rarity as $item ){
 	}
 
 	//foil handling for masters sets.
-	if( $item == ['foil mythic rare', 'foil rare', 'foil uncommon', 'foil common'] ){
-		$item = raritygenerate("curm");
+	if( $cnd["rarity"] == ['foil mythic rare', 'foil rare', 'foil uncommon', 'foil common'] ){
+		$cnd["rarity"] = raritygenerate("curm");
 	}
 
 	//mythic is 1 out of every 8 rares if it's just those two.
-	if( $item == ['rare', 'mythic rare']){
+	if( $cnd["rarity"] == ['rare', 'mythic rare']){
 		if(rand(1,8) == 1){
 			$cnd["rarity"] = "mythic";
 		} else {
@@ -214,7 +214,7 @@ foreach( $rarity as $item ){
 	}
 
 	//1:4 rare to uncommon if it's just those two
-	if( $item == ['rare', 'uncommon']){
+	if( $cnd["rarity"] == ['rare', 'uncommon']){
 		if(rand(1,4) == 4){
 			$cnd["rarity"] = "rare";
 		} else {
@@ -227,21 +227,21 @@ foreach( $rarity as $item ){
 
 	//time spiral has array rarities and weird rules about how many shifted cards can be in a pack.
 	//This "solves" those.
-	if( is_array($item) and $set == "PLC"){
+	if( is_array($cnd["rarity"]) and $set == "PLC"){
 		if(rand(1,4) == 1){
-			$cnd["rarity"] = $item[0];
+			$cnd["rarity"] = $cnd["rarity"][0];
 		} else {
-			$cnd["rarity"] = $item[1];
+			$cnd["rarity"] = $cnd["rarity"][1];
 		}
 	}
 
-	if( is_array($item) and $set == "FUT" ){
+	if( is_array($cnd["rarity"]) and $set == "FUT" ){
 		$isfuture = rand(1, 2) == 1;
 		if($isfuture and $futurecount < 8){
-			$cnd["rarity"] = $item[1];
+			$cnd["rarity"] = $cnd["rarity"][1];
 			$futurecount = $futurecount + 1;
 		} else {
-			$cnd["rarity"] = $item[0];
+			$cnd["rarity"] = $cnd["rarity"][0];
 		}
 	}
 	
@@ -262,7 +262,7 @@ foreach( $rarity as $item ){
 	}
 
 	//Dragon's maze land override
-	if($set == "DGM" and $item == "land"){
+	if($set == "DGM" and $cnd["rarity"] == "land"){
 
 		$card = dgmland($cnd, $shocks, $gates);
 
@@ -294,7 +294,7 @@ foreach( $rarity as $item ){
 		}
 
 		if( $help == "yes" ){
-			echo $cnd["rarity"]." - ".$card["name"];
+			echo "basic land - ".$card["name"];
 			echo "\n";
 		}
 
@@ -314,8 +314,8 @@ foreach( $rarity as $item ){
 	
 
 	//if all else fails, grab a random item if it's an array
-	if( is_array($item) and $cnd["rarity"] == null ){
-		$cnd["rarity"] = $item[rand(0, count($item)-1)];
+	if( is_array($cnd["rarity"]) and $cnd["rarity"] == null ){
+		$cnd["rarity"] = $cnd["rarity"][rand(0, count($cnd["rarity"])-1)];
 	}
 
 	//default to getting a card with currently set conditions
