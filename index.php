@@ -137,13 +137,11 @@ if($help == "yes" or $help == "only"){
 //Science occurs. We have a list of what rarity we need, now we need to pull every card of that rarity and grab one. Several times.
 
 //To Fix:
-//Conspriacies
 //Unsets
 //modern masters
 
 
 //Broken for sets with sub-rarity, but MTGJSON does not recognize their authority
-//Broken for sets with draft-matters
 //Broken for marketing cards
 //Broken for snow land slots
 //Broken for token slots
@@ -253,7 +251,7 @@ foreach( $rarity as $item ){
 			$cnd["rarity"] = $cnd["rarity"][0];
 		}
 	}
-	
+
 	if(substr($cnd["rarity"], 0, 11) == "timeshifted"){
 		$cnd["timeshifted"] = 1;
 		$cnd["rarity"] = str_replace('timeshifted ', '', $cnd["rarity"]);
@@ -317,10 +315,40 @@ foreach( $rarity as $item ){
 
 
 	//Grab draft matters cards for conspiracy, grab other cards for conspiracy
+	if($cnd["set"] == "CNS" or $cnd["set"] == "CN2"){
 
+		if($cnd["rarity"] == "draft-matters"){
+			$cnd["rarity"] =  raritygenerate("curm");
+			$cnd["frameEffect"] = "draft";
+			$card = getcard($cnd);
+
+			while(in_array($card, $pack, true) && $nodupe){
+				$card = getcard($cnd);			
+			}
+		} else {
+
+			$card = getcard($cnd);
+			$cnd["frameEffect"] = null;
+			$cnd["noframeEffect"] = 1;
+			while(in_array($card, $pack, true) && $nodupe){
+				$card = getcard($cnd);
+			}
+		}
+
+		if( $help == "yes" ){
+			echo $cnd["rarity"]." - ".$card["name"];
+			echo "\n";
+		}
+
+		if(strlen($card["name"])>0){
+			$pack[] = $card;
+		}
+
+		continue;
+	}
 
 	//Grab contraptions and other cards for UST
-	
+
 
 	//if all else fails, grab a random item if it's an array
 	if( is_array($cnd["rarity"]) and $cnd["rarity"] == null ){
