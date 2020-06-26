@@ -1,36 +1,67 @@
 <?php
 
 
-function getcard($set, $calcrare, $timeshifted, $frameeffect){
+function getcard($cnd){
 
-	//gets a card from a set based on the rarity provided. Does not pull basics.
+	//gets a card from a set based on the conditions provided
 
 	$conn = new mysqli(SERVERNAME, USERNAME, PASSWORD, DBNAME);
 	if ($conn->connect_error) {
 		die("Connection failed: " . $conn->connect_error);
 	}
 
-	$sql = "select * from cards where cards.setcode = '".$set."' and cards.rarity = '".$calcrare."' and cards.type not like '%Basic%'";
+	$sql = "select * from cards";
 
+	$filterstart = " where ";
+	$fbuild = "";
+	$filterend = ";";
 
-	//this may get messy in the future. Fixes things like time spiral.
-	switch(true){
-	case ($frameeffect == "null"):
-		$sql = $sql."and cards.isTimeshifted = ".$timeshifted." and cards.frameEffect is null;";
-		break;
-	case (strlen($frameeffect)>0):
-		$sql = $sql." and cards.frameEffect like '%".$frameeffect."%';";
-		break;
-	default:
-		$sql = $sql." and cards.isTimeshifted = ".$timeshifted.";";
-		break;
+	if($cnd["set"] != null){
+		$fbuild = $fbuild."and cards.setCode = '".$cnd["set"]."' ";
 	}
 
-if(false){
+	if($cnd["rarity"] != null){
+		$fbuild = $fbuild."and cards.rarity = '".$cnd["rarity"]."' ";
+	}
+
+	if($cnd["timeshifted"] != null){
+		$fbuild = $fbuild."and cards.isTimeshifted = ".$cnd["timeshifted"]." ";
+	}
+
+	if($cnd["frameEffect"] != null){
+		$fbuild = $fbuild."and cards.frameEffect like '%".$cnd["frameEffect"]."%' ";
+	}
+
+	if($cnd["noframeEffect"] == 1){
+		$fbuild = $fbuild."and cards.frameEffect is null ";
+	}
+
+	if($cnd["type"] != null){
+		$fbuild = $fbuild."and cards.type like '%".$cnd["type"]."%' ";
+	}
+
+	if($cnd["basic"] == null){
+		$fbuild = $fbuild."and cards.type not like '%Basic%' ";
+	} else {
+		$fbuild = $fbuild."and cards.type like '%Basic%' ";
+	}
+
+	if (count($fbuild)>0){
+		$fbuild = substr($fbuild, 4);
+		$sql = $sql.$filterstart.$fbuild.$filterend;
+	}
+
+	if($cnd["name"] != null){
+		$sql = "select * from cards where cards.name = '".$cnd["name"]."';";
+	}
+       
+
+if($cnd["sql"] != null){
 
 	echo $sql."\n";
 
 }
+
 	$result = $conn->query($sql);
 
 	if ($result->num_rows < 1){
@@ -40,106 +71,14 @@ if(false){
 	$card = rand(0, $result->num_rows-1);
 
 	$result->data_seek($card);
-	$row = $result->fetch_array();
-	$cardname = $row["name"];
+	$card = $result->fetch_array();
 
-
-	$conn->close();
-	return $cardname;
+if($cnd["sql"] != null){
+	print_r($card);
 }
 
-function getbytype($set, $calcrare, $type){
-
-
-	//gets a card by type and rarity from a set
-
-	$conn = new mysqli(SERVERNAME, USERNAME, PASSWORD, DBNAME);
-	if ($conn->connect_error) {
-		die("Connection failed: " . $conn->connect_error);
-	}
-
-	$sql = "select * from cards where cards.setcode = '".$set."' and cards.rarity = '".$calcrare."' and cards.type like '%".$type."%';";
-
-	$result = $conn->query($sql);
-
-	//	echo $sql;
-
-	if ($result->num_rows < 1){
-		return;
-	}
-
-	$card = rand(0, $result->num_rows-1);
-
-	$result->data_seek($card);
-	$row = $result->fetch_array();
-	$cardname = $row["name"];
-
-
 	$conn->close();
-	return $cardname;
-
-}
-
-function typeonly($type){
-
-
-	//gets a card by type and rarity from a set
-
-	$conn = new mysqli(SERVERNAME, USERNAME, PASSWORD, DBNAME);
-	if ($conn->connect_error) {
-		die("Connection failed: " . $conn->connect_error);
-	}
-
-	$sql = "select * from cards where cards.type like '%".$type."%';";
-
-	$result = $conn->query($sql);
-
-	//	echo $sql;
-
-	if ($result->num_rows < 1){
-		return;
-	}
-
-	$card = rand(0, $result->num_rows-1);
-
-	$result->data_seek($card);
-	$row = $result->fetch_array();
-	$cardname = $row["name"];
-
-
-	$conn->close();
-	return $cardname;
-
-}
-
-function rarityonly($calcrare){
-
-	//gets a card by type and rarity from a set
-
-	$conn = new mysqli(SERVERNAME, USERNAME, PASSWORD, DBNAME);
-	if ($conn->connect_error) {
-		die("Connection failed: " . $conn->connect_error);
-	}
-
-	$sql = "select * from cards where cards.rarity like '%".$calcrare."%';";
-
-	$result = $conn->query($sql);
-
-	//	echo $sql;
-
-	if ($result->num_rows < 1){
-		return;
-	}
-
-	$card = rand(0, $result->num_rows-1);
-
-	$result->data_seek($card);
-	$row = $result->fetch_array();
-	$cardname = $row["name"];
-
-
-	$conn->close();
-	return $cardname;
+	return $card;
 }
 
 //Generates a rarity based on the length of the string passed.
@@ -148,40 +87,40 @@ function rarityonly($calcrare){
 //cu - common uncommon
 //with nothing provided, will just return common.
 function raritygenerate($indicator){
-	if (rand(1,20) == 1 and strlen($indicator)>2){
-		if (rand(1,8) == 1 and strlen($indicator)>3){
+	if (rand(1,20) == 1 and substr($indicator, 2 ,1) == "r"){
+		if (rand(1,8) == 1 and substr($indicator, 3, 1) == "m"){
 			return "mythic";
 		} else {
 			return "rare"; 
 		}
 	}
-	if (rand(1,5) == 1 and strlen($indicator)>1){
+	if (rand(1,5) == 1 and substr($indicator, 1, 1) == "u"){
 		return "uncommon";
 	}
 	return "common";
 }
 
-function dgmland($shocks, $gates){
+function dgmland($cnd, $shocks, $gates){
 	
 		if(rand(1,20) == 1){
 			if(rand(1,8) == 1){
-				return "Maze's End";
+				$cnd["name"]="Maze's End";
+				return getcard($cnd);
 			} else {
-				return $shocks[rand(0, count($shocks)-1)];
+				$cnd["name"] = $shocks[rand(0, count($shocks)-1)];
+				return getcard($cnd);
 			}
 		}
-			return $gates[rand(0, count($gates)-1)];
-
+		$cnd["name"] =  $gates[rand(0, count($gates)-1)];
+		return getcard($cnd);
 }
 
 function printcards($cardlist){
 
 	//Prints the list of cards in the pack.
-	foreach($cardlist as $cardname){
-		if (strlen($cardname) > 0){
-			echo "1 ".$cardname;
+	foreach($cardlist as $card){
+			echo "1 ".$card["name"];
 			echo "\n";
-		}
 	}	
 
 }

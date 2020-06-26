@@ -18,6 +18,9 @@ ini_set('display_startup_errors', 1);
 error_reporting(E_ALL);
  */
 
+$debug = $_GET["debug"];
+//debug help
+
 $help = $_GET["help"];
 //gets pack information if "yes" or "only"
 
@@ -141,40 +144,56 @@ $futurecount = 0;
 
 foreach( $rarity as $item ){
 
+	$cnd = array();
+	$cnd["set"] = $set;
+	$cnd["rarity"] = $item;
+	$cnd["timeshifted"] = 0;
+	$cnd["frameEffect"] = null;
+	$cnd["noframeEffect"] = 0;
+	$cnd["type"] = null;
+	$cnd["sql"] = $debug;
+	$cnd["basic"] = null;
+	$cnd["name"] = null;
+
 	if($item == "marketing"){
+		//eventually we'll put the phone cards in here. Somehow.
 		continue;
 	}
 
-	$timeshifted = 0;
-	$frameeffect = "";
-
 	//Double sided cards are a nightmare nightmare nightmare nightmare nightmare
 	if($set == "SOI" or $set == "ISD" or $set == "EMN"){
-		$frameeffect = "null";
 
 		if( $item == ['common', 'double faced rare', 'double faced mythic rare']){
 			if(rand(1,20) == 1){
 				if(rand(1,8) == 1){
-					$item = "mythic";
+					$cnd["rarity"] = "mythic";
 				} else {
-					$item = "rare";
+					$cnd["rarity"] = "rare";
 				}
-				$frameeffect = "dfc";
+				$cnd["frameEffect"] = "dfc";
 			} else {
-				$item = 'common';
+				$cnd["rarity"] = "common";
 			}
 
 		}
 
 		if( $item == ['double faced common', 'double faced uncommon'] ){
-			$item = raritygenerate("cu");
-			$frameeffect = "dfc";
+			$cnd["rarity"] = raritygenerate("cu");
+			$cnd["frameEffect"] = "dfc";
 		}
 
 		if( $item == "double faced" ){
 
-			$frameeffect = "dfc";
-			$item = raritygenerate("curm");
+			$cnd["frameEffect"] = "dfc";
+			$cnd["rarity"] = raritygenerate("curm");
+		}
+
+		if( $item == ['land', 'checklist']){
+			$cnd["rarity"] = "land";
+		}
+
+		if($cnd["frameEffect"] == null){
+			$cnd["noframeEffect"] = 1;
 		}
 
 
@@ -188,18 +207,18 @@ foreach( $rarity as $item ){
 	//mythic is 1 out of every 8 rares if it's just those two.
 	if( $item == ['rare', 'mythic rare']){
 		if(rand(1,8) == 1){
-			$item = "mythic";
+			$cnd["rarity"] = "mythic";
 		} else {
-			$item = "rare";
+			$cnd["rarity"] = "rare";
 		}
 	}
 
 	//1:4 rare to uncommon if it's just those two
 	if( $item == ['rare', 'uncommon']){
 		if(rand(1,4) == 4){
-			$item = "rare";
+			$cnd["rarity"] = "rare";
 		} else {
-			$item = "uncommon";
+			$cnd["rarity"] = "uncommon";
 		}
 	}
 
@@ -210,55 +229,55 @@ foreach( $rarity as $item ){
 	//This "solves" those.
 	if( is_array($item) and $set == "PLC"){
 		if(rand(1,4) == 1){
-			$item = $item[0];
+			$cnd["rarity"] = $item[0];
 		} else {
-			$item = $item[1];
+			$cnd["rarity"] = $item[1];
 		}
 	}
 
 	if( is_array($item) and $set == "FUT" ){
 		$isfuture = rand(1, 2) == 1;
 		if($isfuture and $futurecount < 8){
-			$item = $item[1];
+			$cnd["rarity"] = $item[1];
 			$futurecount = $futurecount + 1;
 		} else {
-			$item = $item[0];
+			$cnd["rarity"] = $item[0];
 		}
 	}
 	
-	if(strpos($item, "timeshifted") !== false){
-		$timeshifted = 1;
-		$item = str_replace('timeshifted ', '', $item);
+	if(substr($cnd["rarity"], 0, 11) == "timeshifted"){
+		$cnd["timeshifted"] = 1;
+		$cnd["rarity"] = str_replace('timeshifted ', '', $cnd["rarity"]);
 	}
 
-	if($set == "PLC" and $timeshifted == 1){
-		$frameeffect = "colorshifted";
+	if($set == "PLC" and $cnd["timeshifted"] == 1){
+		$cnd["frameEffect"] = "colorshifted";
+		$cnd["timeshifted"] = 0;
 	}
 
 	//GET THAT PURP
-	if($set == "TSP" and $timeshifted == 1 and $item = "purple"){
-		$item = "rare";
-		$set = "TSB";
+	if($set == "TSP" and $cnd["rarity"] == "purple"){
+		$cnd["rarity"] = "rare";
+		$cnd["set"] = "TSB";
 	}
 
 	//Dragon's maze land override
 	if($set == "DGM" and $item == "land"){
 
-
-		$card = dgmland($shocks, $gates);
+		$card = dgmland($cnd, $shocks, $gates);
 
 		while(in_array($card, $pack, true) && $nodupe){
-			$card = dgmland($shocks, $gates);
+			$card = dgmland($cnd, $shocks, $gates);
 		}
 
 		if( $help == "yes" ){
 			echo "timeshifted: ".$timeshifted."\n";
 			echo "frameeffect: ".$frameeffect."\n";
-			echo "DGM Land Slot Override - ".$card;
+			echo "DGM Land Slot Override - ".$card["name"];
 			echo "\n";
 		}
 
-		if(strlen($card)>0){
+		if(strlen($card["name"])>0){
 			$pack[] = $card;
 		}
 
@@ -266,21 +285,24 @@ foreach( $rarity as $item ){
 	}
 
 	//try to add basics in land slots if enabled (some sets don't include basics, so may fail)
-	if($lands == "yes" and $item == "land"){
-		$card = getbytype($set, "common", "basic");
+	if($lands == "yes" and $cnd["rarity"] == "land"){
+		$cnd["basic"] = "yes";
+		$cnd["rarity"] = "common";
+
+		$card = getcard($cnd);
 
 		while(in_array($card, $pack, true) && $nodupe){
-			$card = getbytype($set, "common", "basic");
+			$card = getcard($cnd);
 		}
 
 		if( $help == "yes" ){
 			echo "timeshifted: ".$timeshifted."\n";
 			echo "frameeffect: ".$frameeffect."\n";
-			echo $item." - ".$card;
+			echo $cnd["rarity"]." - ".$card["name"];
 			echo "\n";
 		}
 
-		if(strlen($card)>0){
+		if(strlen($card["name"])>0){
 			$pack[] = $card;
 		}
 
@@ -296,25 +318,23 @@ foreach( $rarity as $item ){
 	
 
 	//if all else fails, grab a random item if it's an array
-	if( is_array($item) ){
-		$item = $item[rand(0, count($item)-1)];
+	if( is_array($item) and $cnd["rarity"] == null ){
+		$cnd["rarity"] = $item[rand(0, count($item)-1)];
 	}
 
-	//Default to just getting a card. Can't ever grab a basic with this function.
-	$card = getcard($set, $item, $timeshifted, $frameeffect);
+	//default to getting a card with currently set conditions
+	$card = getcard($cnd);
 
 	while(in_array($card, $pack, true) && $nodupe){
-		$card = getcard($set, $item, $timeshifted, $frameeffect);
+		$card = getcard($cnd);
 	}
 
 	if( $help == "yes" ){
-		echo "timeshifted: ".$timeshifted."\n";
-		echo "frameeffect: ".$frameeffect."\n";
-		echo $item." - ".$card;
+		echo $cnd["rarity"]." - ".$card["name"];
 		echo "\n";
 	}
 
-	if(strlen($card)>0){
+	if(strlen($card["name"])>0){
 		$pack[] = $card;
 	}
 }
