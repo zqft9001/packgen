@@ -356,40 +356,6 @@ foreach( $rarity as $item ){
 				$card = getcard($cnd);			
 			}
 		} else {
-
-			$card = getcard($cnd);
-			$cnd["frameEffect"] = null;
-			$cnd["noframeEffect"] = 1;
-			while(in_array($card, $pack, true) && $nodupe){
-				$card = getcard($cnd);
-			}
-		}
-
-		if( $help == "yes" ){
-			echo $cnd["rarity"]." - ".$card["name"];
-			echo "\n";
-		}
-
-		if(strlen($card["name"])>0){
-			$pack[] = $card;
-		}
-
-		continue;
-	}
-
-	//Grab draft matters cards for conspiracy 2, grab other cards for conspiracy 2
-	if($cnd["set"] == "CN2"){
-
-		if($cnd["rarity"] == "draft-matters"){
-			$cnd["rarity"] =  raritygenerate("curm");
-			$cnd["frameEffect"] = "draft";
-			$card = getcard($cnd);
-
-			while(in_array($card, $pack, true) && $nodupe){
-				$card = getcard($cnd);			
-			}
-		} else {
-
 			$cnd["frameEffect"] = null;
 			$cnd["noframeEffect"] = 1;
 			$card = getcard($cnd);
