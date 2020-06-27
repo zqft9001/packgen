@@ -148,6 +148,7 @@ if($help == "yes" or $help == "only"){
 //Broken for full art print slots
 
 $futurecount = 0;
+$contraptioncount = 0;
 
 foreach( $rarity as $item ){
 
@@ -343,7 +344,7 @@ foreach( $rarity as $item ){
 
 		continue;
 	}
-	
+
 	//Grab draft matters cards for conspiracy 2, grab other cards for conspiracy 2
 	if($cnd["set"] == "CN2"){
 
@@ -376,7 +377,76 @@ foreach( $rarity as $item ){
 		continue;
 	}
 
-	//Grab contraptions and other cards for UST
+	//Grab contraptions and other cards for Unsanctioned
+	//uses $contraptioncount
+	if($cnd["set"] == "UST"){
+
+		if($cnd["rarity"] == "common" and $contraptioncount == 0){
+			$cnd["rarity"] = raritygenerate("curm");
+			$cnd["type"] = "contraption";
+			$contraptioncount = 1;
+			$card = getcard($cnd);
+			while(in_array($card, $pack, true) && $nodupe){
+				$card = getcard($cnd);
+			}
+
+			if( $help == "yes" ){
+				echo $cnd["rarity"]." - ".$card["name"];
+				echo "\n";
+			}
+
+			if(strlen($card["name"])>0){
+				$pack[] = $card;
+			}
+			continue;
+		} 
+
+
+		if($cnd["rarity"] == "common" and $contraptioncount == 1){
+			$cnd["type"] = "contraption";
+			$contraptioncount = 2;
+			$card = getcard($cnd);
+			while(in_array($card, $pack, true) && $nodupe){
+				$card = getcard($cnd);
+			}
+			if( $help == "yes" ){
+				echo $cnd["rarity"]." - ".$card["name"];
+				echo "\n";
+			}
+
+			if(strlen($card["name"])>0){
+				$pack[] = $card;
+			}
+			continue;
+		}
+
+		if($cnd["rarity"] == ['land', 'Steamflogger Boss']){
+			if(rand(1,121) == 1){
+				$cnd["rarity"] = "Steamflogger Boss";
+				$cnd["name"] = "Steamflogger Boss";
+			} else {
+				$cnd["rarity"] = "land";
+			}
+
+		}
+
+
+		$card = getcard($cnd);
+		while((in_array($card, $pack, true) && $nodupe ) or $card["type"] == "Artifact — Contraption"){
+			$card = getcard($cnd);
+		}
+
+		if( $help == "yes" ){
+			echo $cnd["rarity"]." - ".$card["name"];
+			echo "\n";
+		}
+
+		if(strlen($card["name"])>0){
+			$pack[] = $card;
+		}
+		continue;
+
+	}
 
 
 	//if all else fails, grab a random item if it's an array
