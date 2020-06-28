@@ -54,13 +54,13 @@ function getcard($cnd){
 	if($cnd["name"] != null){
 		$sql = "select * from cards where cards.name = '".$cnd["name"]."';";
 	}
-       
 
-if($cnd["sql"] != null){
 
-	echo $sql."\n";
+	if($cnd["sql"] != null){
 
-}
+		echo $sql."\n";
+
+	}
 
 	$result = $conn->query($sql);
 
@@ -73,9 +73,9 @@ if($cnd["sql"] != null){
 	$result->data_seek($card);
 	$card = $result->fetch_array();
 
-if($cnd["sql"] != null){
-	print_r($card);
-}
+	if($cnd["sql"] != null){
+		print_r($card);
+	}
 
 	$conn->close();
 	return $card;
@@ -101,18 +101,38 @@ function raritygenerate($indicator){
 }
 
 function dgmland($cnd, $shocks, $gates){
-	
-		if(rand(1,20) == 1){
-			if(rand(1,8) == 1){
-				$cnd["name"]="Maze's End";
-				return getcard($cnd);
-			} else {
-				$cnd["name"] = $shocks[rand(0, count($shocks)-1)];
-				return getcard($cnd);
-			}
+
+	if(rand(1,20) == 1){
+		if(rand(1,8) == 1){
+			$cnd["name"]="Maze's End";
+			return getcard($cnd);
+		} else {
+			$cnd["name"] = $shocks[rand(0, count($shocks)-1)];
+			return getcard($cnd);
 		}
-		$cnd["name"] =  $gates[rand(0, count($gates)-1)];
-		return getcard($cnd);
+	}
+	$cnd["name"] =  $gates[rand(0, count($gates)-1)];
+	return getcard($cnd);
+}
+
+function inpack($card, $pack, $strict = false){
+	//Checks if a card is in a pack using the collector's number
+	//$strict - if true, uses exact collectors number. False by default, uses only numeric portion of collector's number.
+
+	foreach($pack as $pcard){
+		if($strict){
+			if($card["number"] == $pcard["number"]){
+				return true;
+			}
+		} else {
+			if(preg_replace("/[^0-9]+/", "", $card["number"]) == preg_replace("/[^0-9]+/", "", $pcard["number"])){
+				return true;
+			}
+
+		}
+	}
+
+	return false;
 }
 
 function printcards($cardlist){
@@ -120,10 +140,10 @@ function printcards($cardlist){
 	//Prints the list of cards in the pack.
 	foreach($cardlist as $card){
 
-			
 
-		echo "1 [".$card["setCode"].":".$card["number"]."] ".$card["name"];
-			echo "\n";
+
+		echo "1 [".$card["setCode"].":".preg_replace("/[^a-zA-Z0-9]+/", "", $card["number"])."] ".$card["name"];
+		echo "\n";
 	}	
 
 }

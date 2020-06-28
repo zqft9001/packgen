@@ -274,7 +274,7 @@ foreach( $rarity as $item ){
 
 		$card = dgmland($cnd, $shocks, $gates);
 
-		while(in_array($card, $pack, true) && $nodupe){
+		while(inpack($card, $pack, false) && $nodupe){
 			$card = dgmland($cnd, $shocks, $gates);
 		}
 
@@ -297,7 +297,7 @@ foreach( $rarity as $item ){
 
 		$card = getcard($cnd);
 
-		while(in_array($card, $pack, true) && $nodupe){
+		while(inpack($card, $pack, false) && $nodupe){
 			$card = getcard($cnd);
 		}
 
@@ -322,13 +322,13 @@ foreach( $rarity as $item ){
 			$cnd["rarity"] =  raritygenerate("curm");
 			$card = getcard($cnd);
 
-			while((in_array($card, $pack, true) && $nodupe) or ($card["type"] != "Conspiracy" and !in_array($card["number"], range(53, 65)))){
+			while((inpack($card, $pack, false) && $nodupe) or ($card["type"] != "Conspiracy" and !in_array($card["number"], range(53, 65)))){
 				$card = getcard($cnd);			
 			}
 		} else {
 
 			$card = getcard($cnd);
-			while((in_array($card, $pack, true) && $nodupe) or ($card["type"] == "Conspiracy" or in_array($card["number"], range(53, 65)))){
+			while((inpack($card, $pack, false) && $nodupe) or ($card["type"] == "Conspiracy" or in_array($card["number"], range(53, 65)))){
 				$card = getcard($cnd);
 			}
 		}
@@ -353,14 +353,14 @@ foreach( $rarity as $item ){
 			$cnd["frameEffect"] = "draft";
 			$card = getcard($cnd);
 
-			while(in_array($card, $pack, true) && $nodupe){
+			while(inpack($card, $pack, false) && $nodupe){
 				$card = getcard($cnd);			
 			}
 		} else {
 			$cnd["frameEffect"] = null;
 			$cnd["noframeEffect"] = 1;
 			$card = getcard($cnd);
-			while(in_array($card, $pack, true) && $nodupe){
+			while(inpack($card, $pack, false) && $nodupe){
 				$card = getcard($cnd);
 			}
 		}
@@ -386,7 +386,7 @@ foreach( $rarity as $item ){
 			$cnd["type"] = "contraption";
 			$contraptioncount = 1;
 			$card = getcard($cnd);
-			while(in_array($card, $pack, true) && $nodupe){
+			while(inpack($card, $pack, false) && $nodupe){
 				$card = getcard($cnd);
 			}
 
@@ -406,7 +406,7 @@ foreach( $rarity as $item ){
 			$cnd["type"] = "contraption";
 			$contraptioncount = 2;
 			$card = getcard($cnd);
-			while(in_array($card, $pack, true) && $nodupe){
+			while(inpack($card, $pack, false) && $nodupe){
 				$card = getcard($cnd);
 			}
 			if( $help == "yes" ){
@@ -437,7 +437,7 @@ foreach( $rarity as $item ){
 
 			$card = getcard($cnd);
 
-			while(in_array($card, $pack, true) && $nodupe){
+			while(inpack($card, $pack, false) && $nodupe){
 				$card = getcard($cnd);
 			}
 
@@ -455,7 +455,7 @@ foreach( $rarity as $item ){
 		}
 
 		$card = getcard($cnd);
-		while((in_array($card, $pack, true) && $nodupe ) or $card["type"] == "Artifact — Contraption"){
+		while((inpack($card, $pack, false) && $nodupe ) or $card["type"] == "Artifact — Contraption"){
 			$card = getcard($cnd);
 		}
 
@@ -480,7 +480,7 @@ foreach( $rarity as $item ){
 	//default to getting a card with currently set conditions
 	$card = getcard($cnd);
 
-	while(in_array($card, $pack, true) && $nodupe){
+	while(inpack($card, $pack, false) && $nodupe){
 		$card = getcard($cnd);
 	}
 
