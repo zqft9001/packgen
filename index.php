@@ -431,6 +431,29 @@ foreach( $rarity as $item ){
 		}
 
 
+		if($lands == "yes" and $cnd["rarity"] == "land"){
+			$cnd["basic"] = "yes";
+			$cnd["rarity"] = "common";
+
+			$card = getcard($cnd);
+
+			while(in_array($card, $pack, true) && $nodupe){
+				$card = getcard($cnd);
+			}
+
+			if( $help == "yes" ){
+				echo "basic land - ".$card["name"];
+				echo "\n";
+			}
+
+			if(strlen($card["name"])>0){
+				$pack[] = $card;
+			}
+
+			continue;
+
+		}
+
 		$card = getcard($cnd);
 		while((in_array($card, $pack, true) && $nodupe ) or $card["type"] == "Artifact — Contraption"){
 			$card = getcard($cnd);
