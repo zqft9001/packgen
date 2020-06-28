@@ -261,6 +261,8 @@ foreach( $rarity as $item ){
 	if($set == "PLC" and $cnd["timeshifted"] == 1){
 		$cnd["frameEffect"] = "colorshifted";
 		$cnd["timeshifted"] = 0;
+	} elseif($set == "PLC"){
+		$cnd["noframeEffect"] = 1;
 	}
 
 	//GET THAT PURP
