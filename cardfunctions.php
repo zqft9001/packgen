@@ -119,7 +119,10 @@ function printcards($cardlist){
 
 	//Prints the list of cards in the pack.
 	foreach($cardlist as $card){
-			echo "1 ".$card["name"];
+
+			
+
+		echo "1 [".$card["setCode"].":".$card["number"]."] ".$card["name"];
 			echo "\n";
 	}	
 
