@@ -16,6 +16,14 @@ function getcard($cnd){
 	$fbuild = "";
 	$filterend = ";";
 
+	if($cnd["max cn"] != null){
+		$fbuild = $fbuild."and cards.number <= ".$cnd["max cn"]." ";
+	}
+
+	if($cnd["cn"] != null){
+		$fbuild = $fbuild."and cards.number like '%".$cnd["cn"]."%' ";
+	}
+
 	if($cnd["set"] != null){
 		$fbuild = $fbuild."and cards.setCode = '".$cnd["set"]."' ";
 	}
@@ -135,13 +143,30 @@ function inpack($card, $pack, $strict = false){
 	return false;
 }
 
+//Prints card nicely. used for help option
+function printnice($card, $options){
+
+	if(strlen($card["name"])<1){
+		return false;
+	}
+	if($options["help"] == "yes"){
+		echo "<a href='https://scryfall.com/search?q=set:".$card["setCode"]."+number:".preg_replace("/[^a-zA-Z0-9]+/", "", $card["number"])."&unique=cards&as=grid&order=set'>";
+		if($options["customrarity"] != null){
+			echo $options["customrarity"]." - [".$card["setCode"].":".preg_replace("/[^a-zA-Z0-9]+/", "", $card["number"])."] ".$card["name"];
+			echo "</a>\n";
+			return true;
+		} else {
+			echo $card["rarity"]." - [".$card["setCode"].":".preg_replace("/[^a-zA-Z0-9]+/", "", $card["number"])."] ".$card["name"];
+			echo "</a>\n";
+			return true;
+		}
+	}
+	return false;
+}
 function printcards($cardlist){
 
 	//Prints the list of cards in the pack.
 	foreach($cardlist as $card){
-
-
-
 		echo "1 [".$card["setCode"].":".preg_replace("/[^a-zA-Z0-9]+/", "", $card["number"])."] ".$card["name"];
 		echo "\n";
 	}	

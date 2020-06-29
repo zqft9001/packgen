@@ -9,7 +9,7 @@ include('packgendefs.php');
 //defines card functions
 include('cardfunctions.php');
 
-//makes the file output as plain text istead of html
+//makes the file output as plain text instead of html
 header('Content-type: text/plain');
 
 /*
@@ -89,6 +89,8 @@ while ($row = $result->fetch_assoc()){
 	If($row["boosterV3"] != NULL){
 	$rarity = json_decode(str_replace("'", '"', $row["boosterV3"]));
 	$set = $row["keyruneCode"];
+	$basesetsize = $row["baseSetSize"];
+	$setfriendly = $row["name"];
 }
 }
 
@@ -122,15 +124,32 @@ default:
 	break;
 }
 
-//break for help only
+$options = array();
+$options["customrarity"] = null;
+
+//help+print options. switches to HTML output if enabled.
 
 if($help == "yes" or $help == "only"){
+
+	$options["help"] = $help;
+
+	header('Content-type: text/html');
+
+	echo "<pre>";
+
+	print_r($setfriendly);
+	echo "\n";
+	echo "keyrune ";
 	print_r($set);
+	echo "\n";
+	echo "base set size ";
+	print_r($basesetsize);
 	echo "\n";
 	print_r($rarity);
 	if($help == "only"){
 		exit;
 	}
+
 }
 
 
@@ -152,21 +171,41 @@ $contraptioncount = 0;
 
 foreach( $rarity as $item ){
 
+	//card conditions
 	$cnd = array();
+	//card set keyrune (string)
 	$cnd["set"] = $set;
+	//card rarity in set (string)
 	$cnd["rarity"] = $item;
+	//timeshifted flag (1 or 0)
 	$cnd["timeshifted"] = 0;
+	//frameEffect (string)
 	$cnd["frameEffect"] = null;
+	//no frameEffect flag (1 or 0)
 	$cnd["noframeEffect"] = 0;
+	//card type (string)
 	$cnd["type"] = null;
+	//echoing SQL (string)
 	$cnd["sql"] = $debug;
+	//set basic (string)
 	$cnd["basic"] = null;
+	//card name (string)
 	$cnd["name"] = null;
+	//collector's number (string)
+	$cnd["cn"] = null;
+	//maximum collector's number (string)
+	$cnd["max cn"] = null;
+
+	//set max collector's number if we have one to reference (will prevent grabbing promos/masterworks)
+	if($basesetsize > 0){
+		$cnd["max cn"] = $basesetsize;
+	}
 
 	if($cnd["rarity"] == "marketing"){
 		//eventually we'll put the phone cards in here. Somehow.
 		continue;
 	}
+
 
 	//Double sided cards are a nightmare nightmare nightmare nightmare nightmare
 	if($set == "SOI" or $set == "ISD" or $set == "EMN"){
@@ -280,10 +319,8 @@ foreach( $rarity as $item ){
 			$card = dgmland($cnd, $shocks, $gates);
 		}
 
-		if( $help == "yes" ){
-			echo "DGM Land Slot Override - ".$card["name"];
-			echo "\n";
-		}
+		$options["customrarity"] = $card["rarity"]." DGM Land";
+		printnice($card, $options);
 
 		if(strlen($card["name"])>0){
 			$pack[] = $card;
@@ -303,10 +340,8 @@ foreach( $rarity as $item ){
 			$card = getcard($cnd);
 		}
 
-		if( $help == "yes" ){
-			echo "basic land - ".$card["name"];
-			echo "\n";
-		}
+		$options["customrarity"] = "Basic Land";
+		printnice($card, $options);
 
 		if(strlen($card["name"])>0){
 			$pack[] = $card;
@@ -327,18 +362,17 @@ foreach( $rarity as $item ){
 			while((inpack($card, $pack, false) && $nodupe) or ($card["type"] != "Conspiracy" and !in_array($card["number"], range(53, 65)))){
 				$card = getcard($cnd);			
 			}
+			$options["customrarity"] =  $card["rarity"]." draft-matters";
+			printnice($card, $options);
 		} else {
 
 			$card = getcard($cnd);
 			while((inpack($card, $pack, false) && $nodupe) or ($card["type"] == "Conspiracy" or in_array($card["number"], range(53, 65)))){
 				$card = getcard($cnd);
 			}
+			printnice($card, $options);
 		}
 
-		if( $help == "yes" ){
-			echo $cnd["rarity"]." - ".$card["name"];
-			echo "\n";
-		}
 
 		if(strlen($card["name"])>0){
 			$pack[] = $card;
@@ -358,6 +392,8 @@ foreach( $rarity as $item ){
 			while(inpack($card, $pack, false) && $nodupe){
 				$card = getcard($cnd);			
 			}
+			$options["customrarity"] = $card["rarity"]." draft-matters";
+			printnice($card, $options);
 		} else {
 			$cnd["frameEffect"] = null;
 			$cnd["noframeEffect"] = 1;
@@ -365,12 +401,9 @@ foreach( $rarity as $item ){
 			while(inpack($card, $pack, false) && $nodupe){
 				$card = getcard($cnd);
 			}
+			printnice($card, $options);
 		}
 
-		if( $help == "yes" ){
-			echo $cnd["rarity"]." - ".$card["name"];
-			echo "\n";
-		}
 
 		if(strlen($card["name"])>0){
 			$pack[] = $card;
@@ -392,11 +425,9 @@ foreach( $rarity as $item ){
 				$card = getcard($cnd);
 			}
 
-			if( $help == "yes" ){
-				echo $cnd["rarity"]." - ".$card["name"];
-				echo "\n";
-			}
-
+			$options["customrarity"] = $card["rarity"]." Contraption";
+			printnice($card, $options);
+			
 			if(strlen($card["name"])>0){
 				$pack[] = $card;
 			}
@@ -411,10 +442,8 @@ foreach( $rarity as $item ){
 			while(inpack($card, $pack, false) && $nodupe){
 				$card = getcard($cnd);
 			}
-			if( $help == "yes" ){
-				echo $cnd["rarity"]." - ".$card["name"];
-				echo "\n";
-			}
+			$options["customrarity"] = $card["rarity"]." Contraption";
+			printnice($card, $options);
 
 			if(strlen($card["name"])>0){
 				$pack[] = $card;
@@ -442,11 +471,8 @@ foreach( $rarity as $item ){
 			while(inpack($card, $pack, false) && $nodupe){
 				$card = getcard($cnd);
 			}
-
-			if( $help == "yes" ){
-				echo "basic land - ".$card["name"];
-				echo "\n";
-			}
+			$options["customrarity"] = "Basic Land";
+			printnice($card, $options);
 
 			if(strlen($card["name"])>0){
 				$pack[] = $card;
@@ -461,10 +487,7 @@ foreach( $rarity as $item ){
 			$card = getcard($cnd);
 		}
 
-		if( $help == "yes" ){
-			echo $cnd["rarity"]." - ".$card["name"];
-			echo "\n";
-		}
+		printnice($card, $options);
 
 		if(strlen($card["name"])>0){
 			$pack[] = $card;
@@ -486,10 +509,7 @@ foreach( $rarity as $item ){
 		$card = getcard($cnd);
 	}
 
-	if( $help == "yes" ){
-		echo $cnd["rarity"]." - ".$card["name"];
-		echo "\n";
-	}
+	printnice($card, $options);	
 
 	if(strlen($card["name"])>0){
 		$pack[] = $card;
