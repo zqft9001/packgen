@@ -24,6 +24,14 @@ function getcard($cnd){
 		$fbuild = $fbuild."and cards.number like '%".$cnd["cn"]."%' ";
 	}
 
+	if($cnd["colors"] != null){
+			$fbuild = $fbuild."and cards.colors like '%".$cnd["colors"]."%' ";
+	}
+
+	if($cnd["colorIDs"] != null){
+			$fbuild = $fbuild."and cards.coloridentity like '%".$cnd["colorID"]."%' ";
+	}
+
 	if($cnd["set"] != null){
 		$fbuild = $fbuild."and cards.setCode = '".$cnd["set"]."' ";
 	}
@@ -49,9 +57,9 @@ function getcard($cnd){
 	}
 
 	if($cnd["basic"] == null){
-		$fbuild = $fbuild."and cards.type not like '%Basic%' ";
+		$fbuild = $fbuild."and cards.type not like '%Basic Land%' ";
 	} else {
-		$fbuild = $fbuild."and cards.type like '%Basic%' ";
+		$fbuild = $fbuild."and cards.type like '%Basic Land%' ";
 	}
 
 	if (count($fbuild)>0){
@@ -146,20 +154,43 @@ function inpack($card, $pack, $strict = false){
 //Prints card nicely. used for help option
 function printnice($card, $options){
 
+	STATIC $fcount = 0;
+
+	$fcount++;
+
 	if(strlen($card["name"])<1){
 		return false;
 	}
 	if($options["help"] == "yes"){
 		echo "<a href='https://scryfall.com/search?q=set:".$card["setCode"]."+number:".preg_replace("/[^a-zA-Z0-9]+/", "", $card["number"])."&unique=cards&as=grid&order=set'>";
-		if($options["customrarity"] != null){
-			echo $options["customrarity"]." - [".$card["setCode"].":".preg_replace("/[^a-zA-Z0-9]+/", "", $card["number"])."] ".$card["name"];
-			echo "</a>\n";
+
+		if($options["images"] == "yes"){
+			echo "<img src='https://api.scryfall.com/cards/".strtolower($card["setCode"])."/".$card["number"]."?format=image' alt='".$card["name"]."' style='height:33%;'></a>";
+			if($fcount % 8 == 0){
+				echo "\n";
+			}
 			return true;
 		} else {
-			echo $card["rarity"]." - [".$card["setCode"].":".preg_replace("/[^a-zA-Z0-9]+/", "", $card["number"])."] ".$card["name"];
-			echo "</a>\n";
-			return true;
+			if($options["customrarity"] != null){
+				echo $options["customrarity"]." - [".$card["setCode"].":".preg_replace("/[^a-zA-Z0-9]+/", "", $card["number"])."] ".$card["name"];
+				echo "</a>\n";
+				return true;
+			} else {
+				echo $card["rarity"]." - [".$card["setCode"].":".preg_replace("/[^a-zA-Z0-9]+/", "", $card["number"])."] ".$card["name"];
+				echo "</a>\n";
+				return true;
+			}
 		}
+	}
+
+
+	if($options["images"] == "yes"){
+		echo "<a href='https://scryfall.com/search?q=set:".$card["setCode"]."+number:".preg_replace("/[^a-zA-Z0-9]+/", "", $card["number"])."&unique=cards&as=grid&order=set'>";
+		echo "<img src='https://api.scryfall.com/cards/".strtolower($card["setCode"])."/".$card["number"]."?format=image' alt='".$card["name"]."' style='height:33%;'></a>";
+		if($fcount % 5 == 0){
+			echo "<br>";
+		}
+		return true;
 	}
 	return false;
 }

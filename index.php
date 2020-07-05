@@ -19,7 +19,7 @@ error_reporting(E_ALL);
  */
 
 $debug = $_GET["debug"];
-//debug help
+//debug help if "yes" (prints SQL, mostly)
 
 $help = $_GET["help"];
 //gets pack information if "yes" or "only"
@@ -49,6 +49,9 @@ if($dupesflag == "yes"){
 } else {
 	$nodupe = True;
 }
+
+$images = $_GET["images"];
+//Printnice will have images if "yes".
 
 $custom = $_GET["custom"];
 //wacky packs
@@ -80,7 +83,7 @@ $result = $conn->query($sql);
 
 //it's not me, it's the query that is wrong
 if ($result->num_rows < 1){
-	$rarity = $stdrarity;
+	$rarity = $currarity;
 }
 
 //Get booster distribution and keyrunecode
@@ -124,16 +127,19 @@ default:
 	break;
 }
 
-$options = array();
-$options["customrarity"] = null;
 
 //help+print options. switches to HTML output if enabled.
+
+if($help == "yes" or $help == "only" or $images == "yes"){
+
+	header('Content-type: text/html');
+
+}
 
 if($help == "yes" or $help == "only"){
 
 	$options["help"] = $help;
 
-	header('Content-type: text/html');
 
 	echo "<pre>";
 
@@ -161,17 +167,24 @@ if($help == "yes" or $help == "only"){
 
 
 //Broken for sets with sub-rarity, but MTGJSON does not recognize their authority
-//Broken for marketing cards
 //Broken for snow land slots
-//Broken for token slots
 //Broken for full art print slots
+//Broken for ME4 Urza's Land slots
+
+$options = array();
+$options["images"] = $images;
+$options["customrarity"] = null;
 
 $futurecount = 0;
 $contraptioncount = 0;
 
 foreach( $rarity as $item ){
 
-	//card conditions
+	//Reset relevant card print options every loop
+	//Custom rarity string for things like DGM
+	$options["customrarity"] = null;
+	
+	//card search conditions
 	$cnd = array();
 	//card set keyrune (string)
 	$cnd["set"] = $set;
@@ -195,13 +208,17 @@ foreach( $rarity as $item ){
 	$cnd["cn"] = null;
 	//maximum collector's number (string)
 	$cnd["max cn"] = null;
+	//card colors (string)
+	$cnd["colors"] = null;
+	//card color identity (string)
+	$cnd["colorIDs"] = null;
 
 	//set max collector's number if we have one to reference (will prevent grabbing promos/masterworks)
 	if($basesetsize > 0){
 		$cnd["max cn"] = $basesetsize;
 	}
 
-	if($cnd["rarity"] == "marketing"){
+	if($cnd["rarity"] == "marketing" or $cnd["rarity"] == "token"){
 		//eventually we'll put the phone cards in here. Somehow.
 		continue;
 	}
@@ -427,7 +444,7 @@ foreach( $rarity as $item ){
 
 			$options["customrarity"] = $card["rarity"]." Contraption";
 			printnice($card, $options);
-			
+
 			if(strlen($card["name"])>0){
 				$pack[] = $card;
 			}
@@ -520,7 +537,7 @@ foreach( $rarity as $item ){
 $conn->close();
 
 //print cards if not using help
-if($help != "yes" ){
+if($help != "yes" and $images !="yes"){
 	printcards($pack);
 }
 
