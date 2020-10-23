@@ -53,7 +53,10 @@ if($dupesflag == "yes"){
 $images = $_GET["images"];
 //Printnice will have images if "yes".
 
-$custom = $_GET["custom"];
+$JSON = $_GET["JSON"];
+//will spit out TTS JSON for the pack instead of normal formatting
+
+$custom = strtolower($_GET["custom"]);
 //wacky packs
 //kami - all legendary cards, rarity ignored, set ignored, 15 card pack.
 //color - grabs only cards of a specific color (from set if specified)
@@ -130,11 +133,23 @@ default:
 
 //help+print options. switches to HTML output if enabled.
 
+$options = array();
+
 if($help == "yes" or $help == "only" or $images == "yes"){
 
 	header('Content-type: text/html');
 
 }
+
+if($images == "yes"){
+	$options["images"] = $images;
+} else {
+
+	$options["images"] = null;
+}
+
+$options["customrarity"] = null;
+
 
 if($help == "yes" or $help == "only"){
 
@@ -156,6 +171,10 @@ if($help == "yes" or $help == "only"){
 		exit;
 	}
 
+} else {
+
+	$options["help"] = null;
+
 }
 
 
@@ -171,9 +190,6 @@ if($help == "yes" or $help == "only"){
 //Broken for full art print slots
 //Broken for ME4 Urza's Land slots
 
-$options = array();
-$options["images"] = $images;
-$options["customrarity"] = null;
 
 $futurecount = 0;
 $contraptioncount = 0;
@@ -183,7 +199,7 @@ foreach( $rarity as $item ){
 	//Reset relevant card print options every loop
 	//Custom rarity string for things like DGM
 	$options["customrarity"] = null;
-	
+
 	//card search conditions
 	$cnd = array();
 	//card set keyrune (string)
@@ -212,6 +228,30 @@ foreach( $rarity as $item ){
 	$cnd["colors"] = null;
 	//card color identity (string)
 	$cnd["colorIDs"] = null;
+	//colorless (1 or 0)
+	$cnd["colorless"] = 0;
+	//colorIDless (1 or 0)
+	$cnd["colorIDless"] = 0;
+
+	//custom options
+	
+	switch($custom){
+		case "white":
+		$cnd["colors"] = "w";
+			break;
+		case "blue":
+		$cnd["colors"] = "u";
+			break;
+		case "black":
+		$cnd["colors"] = "b";
+			break;
+		case "red":
+		$cnd["colors"] = "r";
+			break;
+		case "green";
+		$cnd["colors"] = "g";
+			break;
+	}
 
 	//set max collector's number if we have one to reference (will prevent grabbing promos/masterworks)
 	if($basesetsize > 0){
@@ -512,6 +552,35 @@ foreach( $rarity as $item ){
 		continue;
 
 	}
+	
+	//I don't know if this is exactly correct, but it's... roughly right?
+	if($cnd["set"] == "PLANESWALKER"){
+		$cnd["set"] = "MB1";
+	}
+
+	//if only color is provided, generate a rarity and add a color option
+	switch($cnd["rarity"]){
+	case "red":
+		$cnd["colors"] = "r";
+		$cnd["rarity"] = raritygenerate("curm");
+		break;
+	case "blue":
+		$cnd["colors"] = "u";
+		$cnd["rarity"] = raritygenerate("curm");
+		break;
+	case "green":
+		$cnd["colors"] = "g";
+		$cnd["rarity"] = raritygenerate("curm");
+		break;
+	case "black":
+		$cnd["colors"] = "b";
+		$cnd["rarity"] = raritygenerate("curm");
+		break;
+	case "white":
+		$cnd["colors"] = "w";
+		$cnd["rarity"] = raritygenerate("curm");
+		break;
+	}
 
 
 	//if all else fails, grab a random item if it's an array
@@ -532,12 +601,15 @@ foreach( $rarity as $item ){
 		$pack[] = $card;
 	}
 }
-
 //we outie
 $conn->close();
 
-//print cards if not using help
-if($help != "yes" and $images !="yes"){
+if($JSON == "yes"){
+	printJSON($pack);
+}
+
+//print cards if not using help and not spittin' JSON
+if($help != "yes" and $images !="yes" and $JSON != "yes"){
 	printcards($pack);
 }
 

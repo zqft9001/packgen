@@ -3,7 +3,16 @@
 
 function getcard($cnd){
 
+	static $trycount = 0;
+
+	$trycount = $trycount + 1;
+
+	if($trycount > 100){
+		return;
+	}
+
 	//gets a card from a set based on the conditions provided
+	//Gives up after 100 tries.
 
 	$conn = new mysqli(SERVERNAME, USERNAME, PASSWORD, DBNAME);
 	if ($conn->connect_error) {
@@ -24,12 +33,32 @@ function getcard($cnd){
 		$fbuild = $fbuild."and cards.number like '%".$cnd["cn"]."%' ";
 	}
 
+	if($cnd["colorless"] == 1){
+		$fbuild = $fbuild."and cards.colors is null ";
+	}
+
+	if($cnd["colorIDless"] == 1){
+		$fbuild = $fbuild."and cards.coloridentity is null ";
+	}
+
 	if($cnd["colors"] != null){
+		if(is_array($cnd["colors"])){
+			foreach($cnd["colors"] as $color){
+				$fbuild = $fbuild."and cards.colors like '%".$color."%' ";
+			} 
+		} else {
 			$fbuild = $fbuild."and cards.colors like '%".$cnd["colors"]."%' ";
+		}
 	}
 
 	if($cnd["colorIDs"] != null){
-			$fbuild = $fbuild."and cards.coloridentity like '%".$cnd["colorID"]."%' ";
+		if(is_array($cnd["colorIDs"])){
+			foreach($cnd["colorIDs"] as $color){
+				$fbuild = $fbuild."and cards.coloridentity like '%".$color."%' ";
+			} 
+		} else {
+			$fbuild = $fbuild."and cards.coloridentity like '%".$cnd["colorIDs"]."%' ";
+		}
 	}
 
 	if($cnd["set"] != null){
@@ -68,7 +97,7 @@ function getcard($cnd){
 	}
 
 	if($cnd["name"] != null){
-		$sql = "select * from cards where cards.name = '".$cnd["name"]."';";
+		$sql = "select * from cards where cards.name = '".$cnd["name"]."' and cards.setCode not in ('4BB','FBB','PSAL','PHUK','REN');";
 	}
 
 
@@ -201,5 +230,65 @@ function printcards($cardlist){
 		echo "1 [".$card["setCode"].":".preg_replace("/[^a-zA-Z0-9]+/", "", $card["number"])."] ".$card["name"];
 		echo "\n";
 	}	
+}
 
+function printJSON($cardlist, $back = "https://i.imgur.com/8h6F0QL.png"){
+
+	foreach($cardlist as $card){
+		$deckid = $deckid + 1;
+		echo
+'{
+"Name": "Card",
+"Transform": {
+	"posX": -8.189686,
+	"posY": 0.9736049,
+	"posZ": -8.728649,
+	"rotX": 3.81333543E-08,
+	"rotY": 180.0,
+	"rotZ": -3.45339885E-07,
+	"scaleX": 1.0,
+	"scaleY": 1.0,
+	"scaleZ": 1.0
+	},
+"Nickname": "'.addslashes($card["name"]).' | '.$card["type"].' | CMC'.$card["convertedManaCost"].'",
+"Description": "'.addslashes($card["text"]).'",
+"GMNotes": "",
+"ColorDiffuse": {
+	"r": 0.713235259,
+	"g": 0.713235259,
+	"b": 0.713235259
+	},
+"Locked": false,
+"Grid": true,
+"Snap": true,
+"IgnoreFoW": false,
+"MeasureMovement": false,
+"DragSelectable": true,
+"Autoraise": true,
+"Sticky": true,
+"Tooltip": true,
+"GridProjection": false,
+"HideWhenFaceDown": true,
+"Hands": true,
+"CardID": 100,
+"SidewaysCard": false,
+"CustomDeck": {
+	"1": {
+		"FaceURL": "https://c1.scryfall.com/file/scryfall-cards/normal/front/'.substr($card["scryfallId"],0,1).'/'.substr($card["scryfallId"],1,1).'/'.$card["scryfallId"].'.jpg",
+		"BackURL": "'.$back.'",
+		"NumWidth": 1,
+		"NumHeight": 1,
+		"BackIsHidden": true,
+		"UniqueBack": false,
+		"Type": 0
+	}
+},
+"LuaScript": "",
+"LuaScriptState": "",
+"XmlUI": "",
+"GUID": "947dc9"
+}'
+	;
+	echo "@";
+	}
 }
