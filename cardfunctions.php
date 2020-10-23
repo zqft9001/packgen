@@ -25,11 +25,11 @@ function getcard($cnd){
 	$fbuild = "";
 	$filterend = ";";
 
-	if($cnd["max cn"] != null){
+	if(isset($cnd["max cn"])){
 		$fbuild = $fbuild."and cards.number <= ".$cnd["max cn"]." ";
 	}
 
-	if($cnd["cn"] != null){
+	if(isset($cnd["cn"])){
 		$fbuild = $fbuild."and cards.number like '%".$cnd["cn"]."%' ";
 	}
 
@@ -41,7 +41,7 @@ function getcard($cnd){
 		$fbuild = $fbuild."and cards.coloridentity is null ";
 	}
 
-	if($cnd["colors"] != null){
+	if(isset($cnd["colors"])){
 		if(is_array($cnd["colors"])){
 			foreach($cnd["colors"] as $color){
 				$fbuild = $fbuild."and cards.colors like '%".$color."%' ";
@@ -51,7 +51,7 @@ function getcard($cnd){
 		}
 	}
 
-	if($cnd["colorIDs"] != null){
+	if(isset($cnd["colorIDs"])){
 		if(is_array($cnd["colorIDs"])){
 			foreach($cnd["colorIDs"] as $color){
 				$fbuild = $fbuild."and cards.coloridentity like '%".$color."%' ";
@@ -61,19 +61,19 @@ function getcard($cnd){
 		}
 	}
 
-	if($cnd["set"] != null){
+	if(isset($cnd["set"])){
 		$fbuild = $fbuild."and cards.setCode = '".$cnd["set"]."' ";
 	}
 
-	if($cnd["rarity"] != null){
+	if(isset($cnd["rarity"])){
 		$fbuild = $fbuild."and cards.rarity = '".$cnd["rarity"]."' ";
 	}
 
-	if($cnd["timeshifted"] != null){
+	if(isset($cnd["timeshifted"])){
 		$fbuild = $fbuild."and cards.isTimeshifted = ".$cnd["timeshifted"]." ";
 	}
 
-	if($cnd["frameEffect"] != null){
+	if(isset($cnd["frameEffect"])){
 		$fbuild = $fbuild."and cards.frameEffect like '%".$cnd["frameEffect"]."%' ";
 	}
 
@@ -81,14 +81,14 @@ function getcard($cnd){
 		$fbuild = $fbuild."and cards.frameEffect is null ";
 	}
 
-	if($cnd["type"] != null){
+	if(isset($cnd["type"])){
 		$fbuild = $fbuild."and cards.type like '%".$cnd["type"]."%' ";
 	}
 
-	if($cnd["basic"] == null){
-		$fbuild = $fbuild."and cards.type not like '%Basic Land%' ";
-	} else {
+	if(isset($cnd["basic"])){
 		$fbuild = $fbuild."and cards.type like '%Basic Land%' ";
+	} else {
+		$fbuild = $fbuild."and cards.type not like '%Basic Land%' ";
 	}
 
 	if (count($fbuild)>0){
@@ -96,12 +96,14 @@ function getcard($cnd){
 		$sql = $sql.$filterstart.$fbuild.$filterend;
 	}
 
-	if($cnd["name"] != null){
+	if(isset($cnd["name"])){
 		$sql = "select * from cards where cards.name = '".$cnd["name"]."' and cards.setCode not in ('4BB','FBB','PSAL','PHUK','REN');";
 	}
 
+	echo $cnd["sql"];
 
-	if($cnd["sql"] != null){
+
+	if(isset($cnd["sql"])){
 
 		echo $sql."\n";
 
@@ -191,10 +193,10 @@ function printnice($card, $options){
 		return false;
 	}
 	if($options["help"] == "yes"){
-		echo "<a href='https://scryfall.com/search?q=set:".$card["setCode"]."+number:".preg_replace("/[^a-zA-Z0-9]+/", "", $card["number"])."&unique=cards&as=grid&order=set'>";
+		echo '<a href="https://scryfall.com/card/'.strtolower($card["setCode"]).'/'.$card["number"].'">';
 
 		if($options["images"] == "yes"){
-			echo "<img src='https://api.scryfall.com/cards/".strtolower($card["setCode"])."/".$card["number"]."?format=image' alt='".$card["name"]."' style='height:33%;'></a>";
+		echo "<img src=\"https://c1.scryfall.com/file/scryfall-cards/normal/front/".substr($card["scryfallId"],0,1).'/'.substr($card["scryfallId"],1,1).'/'.$card["scryfallId"].'.jpg"  style=\'height:33%;\'>';
 			if($fcount % 8 == 0){
 				echo "\n";
 			}
@@ -214,8 +216,9 @@ function printnice($card, $options){
 
 
 	if($options["images"] == "yes"){
-		echo "<a href='https://scryfall.com/search?q=set:".$card["setCode"]."+number:".preg_replace("/[^a-zA-Z0-9]+/", "", $card["number"])."&unique=cards&as=grid&order=set'>";
-		echo "<img src='https://api.scryfall.com/cards/".strtolower($card["setCode"])."/".$card["number"]."?format=image' alt='".$card["name"]."' style='height:33%;'></a>";
+		echo '<a href="https://scryfall.com/card/'.strtolower($card["setCode"]).'/'.$card["number"].'">';
+		echo "<img src=\"https://c1.scryfall.com/file/scryfall-cards/normal/front/".substr($card["scryfallId"],0,1).'/'.substr($card["scryfallId"],1,1).'/'.$card["scryfallId"].'.jpg"  style=\'height:33%;\'>';
+		echo '</a>';
 		if($fcount % 5 == 0){
 			echo "<br>";
 		}

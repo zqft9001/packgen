@@ -9,8 +9,21 @@ include('packgendefs.php');
 //defines card functions
 include('cardfunctions.php');
 
+
+//setup connection
+$conn = new mysqli(SERVERNAME, USERNAME, PASSWORD, DBNAME);
+if ($conn->connect_error) {
+	die("Connection failed: " . $conn->connect_error);
+}
+
+
 //makes the file output as plain text instead of html
 header('Content-type: text/plain');
+
+//escape all variables passed
+foreach ($_GET as $key => $value){
+	$gclean[$key]=$conn->escape_string($value);
+}
 
 /*
 ini_set('display_errors', 1);
@@ -18,17 +31,17 @@ ini_set('display_startup_errors', 1);
 error_reporting(E_ALL);
  */
 
-$debug = $_GET["debug"];
+$debug = $gclean["debug"];
 //debug help if "yes" (prints SQL, mostly)
 
-$help = $_GET["help"];
+$help = $gclean["help"];
 //gets pack information if "yes" or "only"
 
-$set = $_GET["set"];
+$set = $gclean["set"];
 //Keyrune of set
 //Grabs a random pack by default
 
-$ptype = $_GET["ptype"];
+$ptype = $gclean["ptype"];
 //type of pack.
 // ori - original rarity (default)
 // r - oops all rares
@@ -38,10 +51,10 @@ $ptype = $_GET["ptype"];
 // u - all uncommons
 // m - all mythics
 
-$lands = $_GET["lands"];
+$lands = $gclean["lands"];
 //attempt lands in pack
 
-$dupesflag = $_GET["dupes"];
+$dupesflag = $gclean["dupes"];
 //sets packs to allow or disallow duplicated. defaults to no duplicate cards.
 
 if($dupesflag == "yes"){
@@ -50,13 +63,13 @@ if($dupesflag == "yes"){
 	$nodupe = True;
 }
 
-$images = $_GET["images"];
+$images = $gclean["images"];
 //Printnice will have images if "yes".
 
-$JSON = $_GET["JSON"];
+$JSON = $gclean["JSON"];
 //will spit out TTS JSON for the pack instead of normal formatting
 
-$custom = strtolower($_GET["custom"]);
+$custom = strtolower($gclean["custom"]);
 //wacky packs
 //kami - all legendary cards, rarity ignored, set ignored, 15 card pack.
 //color - grabs only cards of a specific color (from set if specified)
@@ -64,23 +77,15 @@ $custom = strtolower($_GET["custom"]);
 //define array for adding cards to a pack
 $pack = array();
 
-//setup connection
-$conn = new mysqli(SERVERNAME, USERNAME, PASSWORD, DBNAME);
-if ($conn->connect_error) {
-	die("Connection failed: " . $conn->connect_error);
-}
-
-//escape string to prevent shenanigans
-$search = $conn->escape_string($set);
 
 //grabs a random keyrune if not provided. always one with a boosterV3.
 
-if ($search == ""){
-	$search = $conn->query("select randrune();")->fetch_assoc()["randrune()"];	
+if ($set == ""){
+	$set = $conn->query("select randrune();")->fetch_assoc()["randrune()"];	
 }
 
 //get set info
-$sql = "SELECT * FROM sets where sets.keyruneCode like '%".$search."%' and sets.boosterV3 is not null;";
+$sql = "SELECT * FROM sets where sets.keyruneCode like '%".$set."%' and sets.boosterV3 is not null;";
 
 $result = $conn->query($sql);
 
