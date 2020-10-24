@@ -233,10 +233,12 @@ function printcards($cardlist){
 	}	
 }
 
-function printJSON($cardlist, $back = null, $face = null){
+function printJSON($cardlist, $aback = null, $face = null){
 
-	if($back== null){
+	if($aback == null){
 		$back = "https://i.imgur.com/8h6F0QL.png"; 
+	} else {
+		$back = $aback;
 	}
 
 	foreach($cardlist as $card){
@@ -245,6 +247,13 @@ function printJSON($cardlist, $back = null, $face = null){
 		}
 		if(strpos($card["layout"], "dfc") != false or strpos($card["frameEffects"], "dfc")){
 			$back = 'https://c1.scryfall.com/file/scryfall-cards/normal/back/'.substr($card["scryfallId"],0,1).'/'.substr($card["scryfallId"],1,1).'/'.$card["scryfallId"].'.jpg';
+		} else {
+	if($aback == null){
+		$back = "https://i.imgur.com/8h6F0QL.png"; 
+	} else {
+		$back = $aback;
+	}
+
 		}
 		$deckid = $deckid + 1;
 		echo
