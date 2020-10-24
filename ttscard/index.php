@@ -18,22 +18,20 @@ ini_set('display_startup_errors', 1);
 error_reporting(E_ALL);
  */
 
-$name = $_GET["name"];
 
 $conn = new mysqli(SERVERNAME, USERNAME, PASSWORD, DBNAME);
 if ($conn->connect_error) {
 	die("Connection failed: " . $conn->connect_error);
 }
 
-$name = $conn->escape_string($name);
-
-//Custom rarity string for things like DGM
-$options["customrarity"] = null;
+foreach($_GET as $key=>$value){
+	$gclean[$key] = $conn->escape_string($value);
+}
 
 //card search conditions
 $cnd = array();
 //card set keyrune (string)
-$cnd["set"] = $set;
+$cnd["set"] = $gclean["set"];
 //card rarity in set (string)
 $cnd["rarity"] = $item;
 //timeshifted flag (1 or 0)
@@ -45,13 +43,13 @@ $cnd["noframeEffect"] = 0;
 //card type (string)
 $cnd["type"] = null;
 //echoing SQL (string)
-$cnd["sql"] = null;
+$cnd["sql"] = $gclean["sql"];
 //set basic (string)
 $cnd["basic"] = null;
 //card name (string)
-$cnd["name"] = $name;
+$cnd["name"] = $gclean["name"];
 //collector's number (string)
-$cnd["cn"] = null;
+$cnd["cn"] = $gclean["cardnumber"];
 //maximum collector's number (string)
 $cnd["max cn"] = null;
 //card colors (string)
@@ -63,15 +61,26 @@ $cnd["colorless"] = 0;
 //colorIDless (1 or 0)
 $cnd["colorIDless"] = 0;
 
+
 $card = getcard($cnd);
 
 if (strlen($card["name"]) > 0){
 	$pack[] = $card;
 }else{
-	$cnd["name"]="Island";
-	$pack[] = getcard($cnd);
+	//fuzzy if initial search fails
+	$cnd["fuzzy"]="yes";
+	$card = getcard($cnd);
+	
+	//double fail defaults to island
+	if(strlen($card["name"]) > 0){
+		$pack[] = $card;
+	} else {
+		$cnd = NULL;
+		$cnd["name"] = "Island";
+		$pack[] = getcard($cnd);
+	}
 }
 
-printJSON($pack);
+printJSON($pack,$gclean["back"],$gclean["face"]);
 
 ?>

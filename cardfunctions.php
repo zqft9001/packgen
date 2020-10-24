@@ -30,7 +30,11 @@ function getcard($cnd){
 	}
 
 	if(isset($cnd["cn"])){
-		$fbuild = $fbuild."and cards.number like '%".$cnd["cn"]."%' ";
+		if(is_numeric($cnd["cn"])){
+			$fbuild = $fbuild."and cards.number = ".$cnd["cn"]." ";
+		} else {
+			$fbuild = $fbuild."and cards.number like '".$cnd["cn"]."' ";
+		}
 	}
 
 	if($cnd["colorless"] == 1){
@@ -97,16 +101,20 @@ function getcard($cnd){
 	}
 
 	if(isset($cnd["name"])){
-		$sql = "select * from cards where cards.name = '".$cnd["name"]."' and cards.setCode not in ('4BB','FBB','PSAL','PHUK','REN');";
+		if(isset($cnd["fuzzy"])){
+			$sql = "select * from cards where cards.name like '%".$cnd["name"]."%' and cards.setCode not in ('4BB','FBB','PSAL','PHUK','REN');";
+		} else {
+			$sql = "select * from cards where cards.name = '".$cnd["name"]."' and cards.setCode not in ('4BB','FBB','PSAL','PHUK','REN');";
+		}
 	}
 
-	echo $cnd["sql"];
 
+	if(isset($cnd["id"])){
+		$sql = "select * from cards where cards.uuid = '".$cnd["id"]."';";
+	}
 
 	if(isset($cnd["sql"])){
-
 		echo $sql."\n";
-
 	}
 
 	$result = $conn->query($sql);
@@ -147,20 +155,6 @@ function raritygenerate($indicator){
 	return "common";
 }
 
-function dgmland($cnd, $shocks, $gates){
-
-	if(rand(1,20) == 1){
-		if(rand(1,8) == 1){
-			$cnd["name"]="Maze's End";
-			return getcard($cnd);
-		} else {
-			$cnd["name"] = $shocks[rand(0, count($shocks)-1)];
-			return getcard($cnd);
-		}
-	}
-	$cnd["name"] =  $gates[rand(0, count($gates)-1)];
-	return getcard($cnd);
-}
 
 function inpack($card, $pack, $strict = false){
 	//Checks if a card is in a pack using the collector's number
@@ -192,6 +186,7 @@ function printnice($card, $options){
 	if(strlen($card["name"])<1){
 		return false;
 	}
+	
 	if($options["help"] == "yes"){
 		echo '<a href="https://scryfall.com/card/'.strtolower($card["setCode"]).'/'.$card["number"].'">';
 
@@ -230,14 +225,28 @@ function printcards($cardlist){
 
 	//Prints the list of cards in the pack.
 	foreach($cardlist as $card){
-		echo "1 [".$card["setCode"].":".preg_replace("/[^a-zA-Z0-9]+/", "", $card["number"])."] ".$card["name"];
+		if($card["type"] == "Phone Card"){
+			echo "1 ".$card["image"]." ".$card["name"];
+		}else{
+			echo "1 [".$card["setCode"].":".preg_replace("/[^a-zA-Z0-9]+/", "", $card["number"])."] ".$card["name"];
+		}
 		echo "\n";
 	}	
 }
 
-function printJSON($cardlist, $back = "https://i.imgur.com/8h6F0QL.png"){
+function printJSON($cardlist, $back = null, $face = null){
+
+	if($back== null){
+		$back = "https://i.imgur.com/8h6F0QL.png"; 
+	}
 
 	foreach($cardlist as $card){
+		if(isset($card["image"])){
+			$face = $card["image"];
+		}
+		if(strpos($card["layout"], "dfc") != false or strpos($card["frameEffects"], "dfc")){
+			$back = 'https://c1.scryfall.com/file/scryfall-cards/normal/back/'.substr($card["scryfallId"],0,1).'/'.substr($card["scryfallId"],1,1).'/'.$card["scryfallId"].'.jpg';
+		}
 		$deckid = $deckid + 1;
 		echo
 '{
@@ -277,7 +286,7 @@ function printJSON($cardlist, $back = "https://i.imgur.com/8h6F0QL.png"){
 "SidewaysCard": false,
 "CustomDeck": {
 	"1": {
-		"FaceURL": "https://c1.scryfall.com/file/scryfall-cards/normal/front/'.substr($card["scryfallId"],0,1).'/'.substr($card["scryfallId"],1,1).'/'.$card["scryfallId"].'.jpg",
+		"FaceURL": "'.(isset($face)?$face:'https://c1.scryfall.com/file/scryfall-cards/normal/front/'.substr($card["scryfallId"],0,1).'/'.substr($card["scryfallId"],1,1).'/'.$card["scryfallId"].'.jpg').'",
 		"BackURL": "'.$back.'",
 		"NumWidth": 1,
 		"NumHeight": 1,
