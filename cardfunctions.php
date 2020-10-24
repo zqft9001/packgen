@@ -222,7 +222,6 @@ function printnice($card, $options){
 	return false;
 }
 function printcards($cardlist){
-
 	//Prints the list of cards in the pack.
 	foreach($cardlist as $card){
 		if($card["type"] == "Phone Card"){

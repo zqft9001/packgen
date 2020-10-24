@@ -224,6 +224,7 @@ if($JSON == "yes"){
 
 //print cards if not using help and not spittin' JSON
 if($help != "yes" and $images !="yes" and $JSON != "yes"){
+	printcards($pack);
 }
 
 ?>
