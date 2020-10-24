@@ -215,7 +215,7 @@ foreach($idpack as $cardid){
 $conn->close();
 
 if($JSON == "yes"){
-	printJSON($pack);
+	printJSON($pack, $gclean["back"]);
 } else {
 	foreach($pack as $card){
 		printnice($card, $options);
