@@ -41,11 +41,11 @@ $cnd["frameEffect"] = null;
 //no frameEffect flag (1 or 0)
 $cnd["noframeEffect"] = 0;
 //card type (string)
-$cnd["type"] = null;
+$cnd["type"] = $gclean["type"];
 //echoing SQL (string)
 $cnd["sql"] = $gclean["sql"];
 //set basic (string)
-$cnd["basic"] = null;
+$cnd["basic"] = $gclean["basic"];
 //card name (string)
 $cnd["name"] = $gclean["name"];
 //collector's number (string)
@@ -61,7 +61,9 @@ $cnd["colorless"] = 0;
 //colorIDless (1 or 0)
 $cnd["colorIDless"] = 0;
 //get allprints
-$cnd["allprints"] = "yes";
+$cnd["allprints"] = $gclean["allprints"];
+//get by gatherer
+$cnd["multiverseid"] = $gclean["multiverseid"];
 
 $card = getcard($cnd);
 
@@ -70,12 +72,18 @@ if (count($card) > 0){
 }else{
 	//fuzzy if initial search fails
 	$cnd["fuzzy"]="yes";
+	$cnd["allprints"]="yes";
 	$card = getcard($cnd);
 	
 	//double fail gets nothing
 	if(count($card) > 0){
 		$pack = $card;
 	}
+}
+
+if(!isset($cnd["allprints"])){
+	$pack = null;
+	$pack[] = $card;
 }
 
 if(isset($gclean["packcheck"])){

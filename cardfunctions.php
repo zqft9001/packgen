@@ -161,6 +161,10 @@ function getcard($cnd){
 		$sql = "select * from cards where cards.uuid = '".$cnd["id"]."';";
 	}
 
+	if(isset($cnd["multiverseid"])){
+		$sql = "select * from cards where cards.multiverseid = '".$cnd["multiverseid"]."';";
+	}
+
 	if(isset($cnd["sql"])){
 		echo $sql."\n";
 	}
