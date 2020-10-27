@@ -1,5 +1,53 @@
 <?php
 
+function gettokens($cnd){
+
+
+	if(strlen($cnd["name"]) <= 0){
+		return null;
+	}
+
+	$pack = null;
+
+	static $trycount = 0;
+
+	$trycount = $trycount + 1;
+
+	if($trycount > 100){
+		return;
+	}
+
+	//gets a token based on the conditions provided
+	//Gives up after 100 tries.
+
+	$conn = new mysqli(SERVERNAME, USERNAME, PASSWORD, DBNAME);
+	if ($conn->connect_error) {
+		die("Connection failed: " . $conn->connect_error);
+	}
+
+	$sql = "select * from tokens where tokens.reverserelated like '%".$cnd["name"]."%' or tokens.name like '%".$cnd["name"]."%';";
+
+	if($cnd["sql"]=="yes"){
+		echo $sql;
+	}
+
+	$result = $conn->query($sql);
+
+	if ($result->num_rows < 1){
+		return;
+	}
+
+	for($i = 0; $i < $result->num_rows; $i = $i + 1){
+		$result->data_seek($i);
+		$pack[] = $result->fetch_array();
+	}
+
+	$conn->close();
+
+	return $pack;
+
+}
+
 
 function getcard($cnd){
 
@@ -7,7 +55,7 @@ function getcard($cnd){
 
 	$trycount = $trycount + 1;
 
-	if($trycount > 100){
+	if($trycount > 1000){
 		return;
 	}
 
@@ -102,9 +150,9 @@ function getcard($cnd){
 
 	if(isset($cnd["name"])){
 		if(isset($cnd["fuzzy"])){
-			$sql = "select * from cards where cards.name like '%".$cnd["name"]."%' and cards.setCode not in ('4BB','FBB','PSAL','PHUK','REN');";
+			$sql = "select * from cards where cards.name like \"%".$cnd["name"]."%\" and cards.setCode not in ('4BB','FBB','PSAL','PHUK','REN') and (cards.side IS NULL OR cards.side = 'a');";
 		} else {
-			$sql = "select * from cards where cards.name = '".$cnd["name"]."' and cards.setCode not in ('4BB','FBB','PSAL','PHUK','REN');";
+			$sql = "select * from cards where cards.name = \"".$cnd["name"]."\" and cards.setCode not in ('4BB','FBB','PSAL','PHUK','REN') and (cards.side IS NULL OR cards.side = 'a');";
 		}
 	}
 
@@ -123,17 +171,31 @@ function getcard($cnd){
 		return;
 	}
 
-	$card = rand(0, $result->num_rows-1);
+	if(isset($cnd["allprints"])){
+		for($i = 0; $i < $result->num_rows; $i = $i + 1){
+			$result->data_seek($i);
+			$pack[] = $result->fetch_array();
+		}
 
-	$result->data_seek($card);
-	$card = $result->fetch_array();
+		if($cnd["sql"] != null){
+			print_r($pack);
+		}
+		$conn->close();
+		return $pack;
+	} else {
+		$card = rand(0, $result->num_rows-1);
 
-	if($cnd["sql"] != null){
-		print_r($card);
+		$result->data_seek($card);
+		$card = $result->fetch_array();
+
+		if($cnd["sql"] != null){
+			print_r($card);
+		}
+		$conn->close();
+		return $card;
 	}
 
-	$conn->close();
-	return $card;
+
 }
 
 //Generates a rarity based on the length of the string passed.
@@ -186,12 +248,12 @@ function printnice($card, $options){
 	if(strlen($card["name"])<1){
 		return false;
 	}
-	
+
 	if($options["help"] == "yes"){
 		echo '<a href="https://scryfall.com/card/'.strtolower($card["setCode"]).'/'.$card["number"].'">';
 
 		if($options["images"] == "yes"){
-		echo "<img src=\"https://c1.scryfall.com/file/scryfall-cards/normal/front/".substr($card["scryfallId"],0,1).'/'.substr($card["scryfallId"],1,1).'/'.$card["scryfallId"].'.jpg"  style=\'height:33%;\'>';
+			echo "<img src=\"https://c1.scryfall.com/file/scryfall-cards/normal/front/".substr($card["scryfallId"],0,1).'/'.substr($card["scryfallId"],1,1).'/'.$card["scryfallId"].'.jpg"  style=\'height:33%;\'>';
 			if($fcount % 8 == 0){
 				echo "\n";
 			}
@@ -246,69 +308,176 @@ function printJSON($cardlist, $aback = null, $face = null){
 			$face = $card["image"];
 		}
 		if(strpos($card["layout"], "dfc") != false or strpos($card["frameEffects"], "dfc")){
-			$back = 'https://c1.scryfall.com/file/scryfall-cards/normal/back/'.substr($card["scryfallId"],0,1).'/'.substr($card["scryfallId"],1,1).'/'.$card["scryfallId"].'.jpg';
-		} else {
-	if($aback == null){
-		$back = "https://i.imgur.com/8h6F0QL.png"; 
-	} else {
-		$back = $aback;
-	}
+			$dfcback = 'https://c1.scryfall.com/file/scryfall-cards/normal/back/'.substr($card["scryfallId"],0,1).'/'.substr($card["scryfallId"],1,1).'/'.$card["scryfallId"].'.jpg';
 
+			echo
+				'{
+				"Name": "Card",
+					"Transform": {
+					"posX": 12.375,
+						"posY": 0.9736049,
+						"posZ": -1.5,
+						"rotX": -7.70756259E-08,
+						"rotY": 180.0,
+						"rotZ": -2.68071521E-09,
+						"scaleX": 1.0,
+						"scaleY": 1.0,
+						"scaleZ": 1.0
+		},
+			"Nickname": "'.addslashes($card["name"]).' | '.$card["type"].' | CMC'.$card["convertedManaCost"].'",
+			"Description": "'.addslashes($card["text"]).'",
+			"GMNotes": "",
+			"ColorDiffuse": {
+			"r": 0.713235259,
+				"g": 0.713235259,
+				"b": 0.713235259
+		},
+			"Locked": false,
+			"Grid": true,
+			"Snap": true,
+			"IgnoreFoW": false,
+			"MeasureMovement": false,
+			"DragSelectable": true,
+			"Autoraise": true,
+			"Sticky": true,
+			"Tooltip": true,
+			"GridProjection": false,
+			"HideWhenFaceDown": true,
+			"Hands": true,
+			"CardID": 100,
+			"SidewaysCard": false,
+			"CustomDeck": {
+			"1": {
+			"FaceURL": "'.(isset($face)?$face:'https://c1.scryfall.com/file/scryfall-cards/normal/front/'.substr($card["scryfallId"],0,1).'/'.substr($card["scryfallId"],1,1).'/'.$card["scryfallId"].'.jpg').'",
+				"BackURL": "'.$back.'",
+				"NumWidth": 1,
+				"NumHeight": 1,
+				"BackIsHidden": true,
+				"UniqueBack": false,
+				"Type": 0
 		}
+		},
+			"LuaScript": "",
+			"LuaScriptState": "",
+			"XmlUI": "",
+			"GUID": "748460",
+			"States": {
+			"2": {
+			"Name": "Card",
+				"Transform": {
+				"posX": 12.375,
+					"posY": 0.973604858,
+					"posZ": 7.5,
+					"rotX": -2.38057556E-08,
+					"rotY": 180.0,
+					"rotZ": 2.25152735E-06,
+					"scaleX": 1.0,
+					"scaleY": 1.0,
+					"scaleZ": 1.0
+		},
+			"Nickname": "'.addslashes($card["name"]).' | '.$card["type"].' | CMC'.$card["convertedManaCost"].'",
+			"Description": "'.addslashes($card["text"]).'",
+			"GMNotes": "",
+			"ColorDiffuse": {
+			"r": 0.713235259,
+				"g": 0.713235259,
+				"b": 0.713235259
+		},
+			"Locked": false,
+			"Grid": true,
+			"Snap": true,
+			"IgnoreFoW": false,
+			"MeasureMovement": false,
+			"DragSelectable": true,
+			"Autoraise": true,
+			"Sticky": true,
+			"Tooltip": true,
+			"GridProjection": false,
+			"HideWhenFaceDown": true,
+			"Hands": true,
+			"CardID": 100,
+			"SidewaysCard": false,
+			"CustomDeck": {
+			"1": {
+			"FaceURL": "'.(isset($face)?$face:'https://c1.scryfall.com/file/scryfall-cards/normal/front/'.substr($card["scryfallId"],0,1).'/'.substr($card["scryfallId"],1,1).'/'.$card["scryfallId"].'.jpg').'",
+				"BackURL": "'.$dfcback.'",
+				"NumWidth": 1,
+				"NumHeight": 1,
+				"BackIsHidden": true,
+				"UniqueBack": false,
+				"Type": 0
+		}
+		},
+			"LuaScript": "",
+			"LuaScriptState": "",
+			"XmlUI": "",
+			"GUID": "947dc9"
+		}
+		}
+		}';
+		echo "@";
+
+		} else {
+			if($aback == null){
+				$back = "https://i.imgur.com/8h6F0QL.png"; 
+			} else {
+				$back = $aback;
+			}
 		$deckid = $deckid + 1;
 		echo
-'{
-"Name": "Card",
-"Transform": {
-	"posX": -8.189686,
-	"posY": 0.9736049,
-	"posZ": -8.728649,
-	"rotX": 3.81333543E-08,
-	"rotY": 180.0,
-	"rotZ": -3.45339885E-07,
-	"scaleX": 1.0,
-	"scaleY": 1.0,
-	"scaleZ": 1.0
+			'{
+			"Name": "Card",
+				"Transform": {
+				"posX": -8.189686,
+					"posY": 0.9736049,
+					"posZ": -8.728649,
+					"rotX": 3.81333543E-08,
+					"rotY": 180.0,
+					"rotZ": -3.45339885E-07,
+					"scaleX": 1.0,
+					"scaleY": 1.0,
+					"scaleZ": 1.0
 	},
-"Nickname": "'.addslashes($card["name"]).' | '.$card["type"].' | CMC'.$card["convertedManaCost"].'",
-"Description": "'.addslashes($card["text"]).'",
-"GMNotes": "",
-"ColorDiffuse": {
-	"r": 0.713235259,
-	"g": 0.713235259,
-	"b": 0.713235259
+		"Nickname": "'.addslashes($card["name"]).' | '.$card["type"].' | CMC'.$card["convertedManaCost"].'",
+		"Description": "'.addslashes($card["text"]).'",
+		"GMNotes": "",
+		"ColorDiffuse": {
+		"r": 0.713235259,
+			"g": 0.713235259,
+			"b": 0.713235259
 	},
-"Locked": false,
-"Grid": true,
-"Snap": true,
-"IgnoreFoW": false,
-"MeasureMovement": false,
-"DragSelectable": true,
-"Autoraise": true,
-"Sticky": true,
-"Tooltip": true,
-"GridProjection": false,
-"HideWhenFaceDown": true,
-"Hands": true,
-"CardID": 100,
-"SidewaysCard": false,
-"CustomDeck": {
-	"1": {
+		"Locked": false,
+		"Grid": true,
+		"Snap": true,
+		"IgnoreFoW": false,
+		"MeasureMovement": false,
+		"DragSelectable": true,
+		"Autoraise": true,
+		"Sticky": true,
+		"Tooltip": true,
+		"GridProjection": false,
+		"HideWhenFaceDown": true,
+		"Hands": true,
+		"CardID": 100,
+		"SidewaysCard": false,
+		"CustomDeck": {
+		"1": {
 		"FaceURL": "'.(isset($face)?$face:'https://c1.scryfall.com/file/scryfall-cards/normal/front/'.substr($card["scryfallId"],0,1).'/'.substr($card["scryfallId"],1,1).'/'.$card["scryfallId"].'.jpg').'",
-		"BackURL": "'.$back.'",
-		"NumWidth": 1,
-		"NumHeight": 1,
-		"BackIsHidden": true,
-		"UniqueBack": false,
-		"Type": 0
+			"BackURL": "'.$back.'",
+			"NumWidth": 1,
+			"NumHeight": 1,
+			"BackIsHidden": true,
+			"UniqueBack": false,
+			"Type": 0
 	}
-},
-"LuaScript": "",
-"LuaScriptState": "",
-"XmlUI": "",
-"GUID": "947dc9"
-}'
+	},
+		"LuaScript": "",
+		"LuaScriptState": "",
+		"XmlUI": "",
+		"GUID": "947dc9"
+	}'
 	;
-	echo "@";
+		echo "@";
+		}
 	}
 }

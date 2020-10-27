@@ -61,12 +61,18 @@ $cnd["colorless"] = 0;
 //colorIDless (1 or 0)
 $cnd["colorIDless"] = 0;
 //get allprints
-$cnd["allprints"] = "yes";
+$cnd["allprints"] = null;
+
+$deck = null;
+
+foreach(explode(";", $gclean["cards"]) as $cardname){
+
+$cnd["name"] = $cardname;
 
 $card = getcard($cnd);
 
 if (count($card) > 0){
-	$pack = $card;
+	$deck[] = $card;
 }else{
 	//fuzzy if initial search fails
 	$cnd["fuzzy"]="yes";
@@ -74,14 +80,16 @@ if (count($card) > 0){
 	
 	//double fail gets nothing
 	if(count($card) > 0){
-		$pack = $card;
+		$deck[] = $card;
 	}
 }
-
-if(isset($gclean["packcheck"])){
-	print_r($pack);
+$cnd["fuzzy"] = null;
 }
 
-printJSON($pack,$gclean["back"],$gclean["face"]);
+if(isset($gclean["deckcheck"])){
+	print_r($deck);
+}
+
+printJSON($deck,$gclean["back"],$gclean["face"]);
 
 ?>
