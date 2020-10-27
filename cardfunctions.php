@@ -71,7 +71,7 @@ function getcard($cnd){
 
 	$filterstart = " where ";
 	$fbuild = "";
-	$filterend = ";";
+	$filterend = "and (cards.side IS NULL OR cards.side = 'a');";
 
 	if(isset($cnd["max cn"])){
 		$fbuild = $fbuild."and cards.number <= ".$cnd["max cn"]." ";
