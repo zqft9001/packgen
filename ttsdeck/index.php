@@ -65,7 +65,7 @@ $cnd["allprints"] = null;
 
 $deck = null;
 
-if(isset($gclean["name"])){
+if(isset($gclean["cards"])){
 	foreach(explode(";", $gclean["cards"]) as $cardname){
 
 		$cnd["name"] = $cardname;
