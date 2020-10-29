@@ -137,12 +137,6 @@ function getcard($cnd){
 		$fbuild = $fbuild."and cards.type like '%".$cnd["type"]."%' ";
 	}
 
-	if(isset($cnd["basic"])){
-		$fbuild = $fbuild."and cards.type like '%Basic Land%' ";
-	} else {
-		$fbuild = $fbuild."and cards.type not like '%Basic Land%' ";
-	}
-
 	if (count($fbuild)>0){
 		$fbuild = substr($fbuild, 4);
 		$sql = $sql.$filterstart.$fbuild.$filterend;
@@ -302,14 +296,21 @@ function printcards($cardlist){
 function printJSON($cardlist, $aback = null, $face = null){
 
 	if($aback == null){
-		$back = "https://i.imgur.com/8h6F0QL.png"; 
+		$back = "https://i.imgur.com/M5v4CzN.png"; 
 	} else {
 		$back = $aback;
 	}
 
 	foreach($cardlist as $card){
+		
+		$nickname = addslashes($card["name"]).' | '.$card["type"].' | CMC'.$card["convertedManaCost"];
+		
+		$description = addslashes($card["text"]).' | '.$card["setCode"].':'.$card["number"];
+
 		if(isset($card["image"])){
 			$face = $card["image"];
+		} else {
+			$face = 'https://c1.scryfall.com/file/scryfall-cards/normal/front/'.substr($card["scryfallId"],0,1).'/'.substr($card["scryfallId"],1,1).'/'.$card["scryfallId"].'.jpg';
 		}
 		if(strpos($card["layout"], "dfc") != false or strpos($card["frameEffects"], "dfc")){
 			$dfcback = 'https://c1.scryfall.com/file/scryfall-cards/normal/back/'.substr($card["scryfallId"],0,1).'/'.substr($card["scryfallId"],1,1).'/'.$card["scryfallId"].'.jpg';
@@ -328,8 +329,8 @@ function printJSON($cardlist, $aback = null, $face = null){
 						"scaleY": 1.0,
 						"scaleZ": 1.0
 		},
-			"Nickname": "'.addslashes($card["name"]).' | '.$card["type"].' | CMC'.$card["convertedManaCost"].'",
-			"Description": "'.addslashes($card["text"]).'",
+			"Nickname": "'.$nickname.'",
+			"Description": "'.$description.'",
 			"GMNotes": "",
 			"ColorDiffuse": {
 			"r": 0.713235259,
@@ -352,7 +353,7 @@ function printJSON($cardlist, $aback = null, $face = null){
 			"SidewaysCard": false,
 			"CustomDeck": {
 			"1": {
-			"FaceURL": "'.(isset($face)?$face:'https://c1.scryfall.com/file/scryfall-cards/normal/front/'.substr($card["scryfallId"],0,1).'/'.substr($card["scryfallId"],1,1).'/'.$card["scryfallId"].'.jpg').'",
+			"FaceURL": "'.$face.'",
 				"BackURL": "'.$back.'",
 				"NumWidth": 1,
 				"NumHeight": 1,
@@ -379,8 +380,8 @@ function printJSON($cardlist, $aback = null, $face = null){
 					"scaleY": 1.0,
 					"scaleZ": 1.0
 		},
-			"Nickname": "'.addslashes($card["name"]).' | '.$card["type"].' | CMC'.$card["convertedManaCost"].'",
-			"Description": "'.addslashes($card["text"]).'",
+			"Nickname": "'.$nickname.'",
+			"Description": "'.$description.'",
 			"GMNotes": "",
 			"ColorDiffuse": {
 			"r": 0.713235259,
@@ -403,7 +404,7 @@ function printJSON($cardlist, $aback = null, $face = null){
 			"SidewaysCard": false,
 			"CustomDeck": {
 			"1": {
-			"FaceURL": "'.(isset($face)?$face:'https://c1.scryfall.com/file/scryfall-cards/normal/front/'.substr($card["scryfallId"],0,1).'/'.substr($card["scryfallId"],1,1).'/'.$card["scryfallId"].'.jpg').'",
+			"FaceURL": "'.$face.'",
 				"BackURL": "'.$dfcback.'",
 				"NumWidth": 1,
 				"NumHeight": 1,
@@ -423,7 +424,7 @@ function printJSON($cardlist, $aback = null, $face = null){
 
 		} else {
 			if($aback == null){
-				$back = "https://i.imgur.com/8h6F0QL.png"; 
+				$back = "https://i.imgur.com/M5v4CzN.png"; 
 			} else {
 				$back = $aback;
 			}
@@ -442,8 +443,8 @@ function printJSON($cardlist, $aback = null, $face = null){
 					"scaleY": 1.0,
 					"scaleZ": 1.0
 	},
-		"Nickname": "'.addslashes($card["name"]).' | '.$card["type"].' | CMC'.$card["convertedManaCost"].'",
-		"Description": "'.addslashes($card["text"]).'",
+		"Nickname": "'.$nickname.'",
+		"Description": "'.$description.'",
 		"GMNotes": "",
 		"ColorDiffuse": {
 		"r": 0.713235259,
@@ -466,7 +467,7 @@ function printJSON($cardlist, $aback = null, $face = null){
 		"SidewaysCard": false,
 		"CustomDeck": {
 		"1": {
-		"FaceURL": "'.(isset($face)?$face:'https://c1.scryfall.com/file/scryfall-cards/normal/front/'.substr($card["scryfallId"],0,1).'/'.substr($card["scryfallId"],1,1).'/'.$card["scryfallId"].'.jpg').'",
+		"FaceURL": "'.$face.'",
 			"BackURL": "'.$back.'",
 			"NumWidth": 1,
 			"NumHeight": 1,

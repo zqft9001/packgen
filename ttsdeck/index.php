@@ -31,7 +31,7 @@ foreach($_GET as $key=>$value){
 //card search conditions
 $cnd = array();
 //card set keyrune (string)
-$cnd["set"] = $gclean["set"];
+$cnd["set"] = null;
 //card rarity in set (string)
 $cnd["rarity"] = $item;
 //timeshifted flag (1 or 0)
@@ -47,9 +47,9 @@ $cnd["sql"] = $gclean["sql"];
 //set basic (string)
 $cnd["basic"] = null;
 //card name (string)
-$cnd["name"] = $gclean["name"];
+$cnd["name"] = null;
 //collector's number (string)
-$cnd["cn"] = $gclean["cardnumber"];
+$cnd["cn"] = null;
 //maximum collector's number (string)
 $cnd["max cn"] = null;
 //card colors (string)
@@ -65,25 +65,55 @@ $cnd["allprints"] = null;
 
 $deck = null;
 
-foreach(explode(";", $gclean["cards"]) as $cardname){
+if(isset($gclean["name"])){
+	foreach(explode(";", $gclean["cards"]) as $cardname){
 
-$cnd["name"] = $cardname;
+		$cnd["name"] = $cardname;
 
-$card = getcard($cnd);
+		$card = getcard($cnd);
 
-if (count($card) > 0){
-	$deck[] = $card;
-}else{
-	//fuzzy if initial search fails
-	$cnd["fuzzy"]="yes";
-	$card = getcard($cnd);
-	
-	//double fail gets nothing
-	if(count($card) > 0){
-		$deck[] = $card;
+		if (count($card) > 0){
+			$deck[] = $card;
+		}else{
+			//fuzzy if initial search fails
+			$cnd["fuzzy"]="yes";
+			$card = getcard($cnd);
+
+			//double fail gets nothing
+			if(count($card) > 0){
+				$deck[] = $card;
+			}
+		}
+		$cnd["fuzzy"] = null;
 	}
-}
-$cnd["fuzzy"] = null;
+}elseif(isset($gclean["cardnumber"]) and isset($gclean["set"])){
+	$numbers = explode(";", $gclean["cardnumber"]);
+	$sets = explode(";", $gclean["set"]);
+
+	for($i = 0; $i < count($sets); $i = $i + 1){
+
+		$cnd["set"] = $sets[$i];
+		$cnd["cn"] = $numbers[$i];
+
+		$card = getcard($cnd);
+
+		if (count($card) > 0){
+			$deck[] = $card;
+		}else{
+			//fuzzy if initial search fails
+			$cnd["fuzzy"]="yes";
+			$card = getcard($cnd);
+
+			//double fail gets nothing
+			if(count($card) > 0){
+				$deck[] = $card;
+			}
+		}
+		$cnd["fuzzy"] = null;
+
+
+	}
+
 }
 
 if(isset($gclean["deckcheck"])){
