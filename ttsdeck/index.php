@@ -65,7 +65,11 @@ $cnd["allprints"] = null;
 
 $deck = null;
 
+
 if(isset($gclean["cards"])){
+	if($gclean["cards"] == ""){
+		exit;
+	}
 	foreach(explode(";", $gclean["cards"]) as $cardname){
 
 		$cnd["name"] = $cardname;
@@ -87,8 +91,15 @@ if(isset($gclean["cards"])){
 		$cnd["fuzzy"] = null;
 	}
 }elseif(isset($gclean["cardnumber"]) and isset($gclean["set"])){
+	if($gclean["cardnumber"] == "" or $gclean["set"] == ""){
+		exit;
+	}
 	$numbers = explode(";", $gclean["cardnumber"]);
 	$sets = explode(";", $gclean["set"]);
+
+	if(count($numbers) != count($sets)){
+		exit;
+	}
 
 	for($i = 0; $i < count($sets); $i = $i + 1){
 
