@@ -293,7 +293,7 @@ function printcards($cardlist){
 	}	
 }
 
-function printJSON($cardlist, $aback = null, $face = null){
+function printJSON($cardlist, $aback = null, $aface = null){
 
 	if($aback == null){
 		$back = "https://i.imgur.com/M5v4CzN.png"; 
@@ -306,8 +306,9 @@ function printJSON($cardlist, $aback = null, $face = null){
 		$nickname = addslashes($card["name"]).' | '.$card["type"].' | CMC'.$card["convertedManaCost"];
 		
 		$description = addslashes($card["text"]).' | '.$card["setCode"].':'.$card["number"];
-
-		if(isset($card["image"])){
+		if(isset($aface) and $aface != ""){
+			$face = $aface;
+		}elseif(isset($card["image"])){
 			$face = $card["image"];
 		} else {
 			$face = 'https://c1.scryfall.com/file/scryfall-cards/normal/front/'.substr($card["scryfallId"],0,1).'/'.substr($card["scryfallId"],1,1).'/'.$card["scryfallId"].'.jpg';
