@@ -162,7 +162,7 @@ if($help == "yes" or $help == "only"){
 	echo "current layout:";
 	echo "\n";
 	var_dump($layout);
-	
+
 	if($help == "only"){
 		exit;
 	}
@@ -177,20 +177,40 @@ if($help == "yes" or $help == "only"){
 $sheets = $sinfo["sheets"];
 
 $idpack = null;
+$pack = null;
 
 foreach($layout["contents"] as $rarity=>$amount){
+	$checkwubrg = ['B','G','R','U','W'];
 	for($i = 0; $i < $amount; $i = $i + 1){
-		
+
+
+		redopick:
 		$scount = rand(1, $sheets[$rarity]["totalWeight"]);
 
-		foreach($sheets[$rarity]["cards"] as $card=>$weight){
+		foreach($sheets[$rarity]["cards"] as $cardid=>$weight){
 			$scount = $scount - $weight;
 			if($scount <= 0){
-				if(in_array($card, $idpack)){
+				if(in_array($cardid, $idpack)){
 					//do-over on exact matches
-					continue;					
+					goto redopick;					
 				} else {
-					$idpack[] = $card;
+					$cnd["id"] = $cardid;
+					$card = getcard($cnd);
+					
+					$colors = explode(",", $card["colors"]);
+
+					if(isset($sheets[$rarity]["balanceColors"]) and count($checkwubrg) > 0){
+						for( $j = 0; $j < count($checkwubrg); $j = $j + 1){
+							if(in_array($checkwubrg[$j], $colors)){
+								array_splice($checkwubrg, $j, 1);
+								goto cardtopack;
+							}
+						}
+						goto redopick;
+					}
+					cardtopack:
+					$pack[] = $card;
+					$idpack[] = $cardid;
 					break;
 				}
 			}
@@ -200,15 +220,6 @@ foreach($layout["contents"] as $rarity=>$amount){
 	}	
 
 
-}
-
-//get those cards
-
-$pack = null;
-
-foreach($idpack as $cardid){
-	$cnd["id"] = $cardid;
-	$pack[] = getcard($cnd);
 }
 
 //we outie
