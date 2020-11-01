@@ -293,19 +293,48 @@ function printcards($cardlist){
 	}	
 }
 
-function printJSON($cardlist, $aback = null, $aface = null){
+
+function printJSON($cardlist, $aback = null, $aface = null, $apos = null, $arot = null, $ascl = null, $note = null){
+
+	include('JSONdefs.php');
 
 	if($aback == null){
-		$back = "https://i.imgur.com/M5v4CzN.png"; 
+		$back = $CARDBACK; 
 	} else {
 		$back = $aback;
 	}
 
+	if($apos == null){
+		$pos = $_POS;
+	} else {
+		$pos = $apos;
+	}
+
+	if($arot == null){
+		$rot = $_ROT;
+	} else {
+		$rot = $arot;
+	}
+
+	if($ascl == null){
+		$scl = $_SCL;
+	} else {
+		$scl = $ascl;
+	}
+
 	foreach($cardlist as $card){
-		
+
+		if(isset($card["note"])){
+			//new notes change position of pile
+			if($note != $card["note"]){
+				$pos["x"] = $pos["x"] + 3;
+			}
+			$note = $card["note"];
+		}
+
 		$nickname = addslashes($card["name"]).' | '.$card["type"].' | CMC'.$card["convertedManaCost"];
 		
-		$description = addslashes($card["text"]).' | '.$card["setCode"].':'.$card["number"];
+		$description = addslashes($card["text"]).' | '.$card["setCode"].':'.$card["number"].' | '.$note;
 		if(isset($aface) and $aface != ""){
 			$face = $aface;
 		}elseif(isset($card["image"])){
@@ -320,15 +349,15 @@ function printJSON($cardlist, $aback = null, $aface = null){
 				'{
 				"Name": "Card",
 					"Transform": {
-					"posX": 12.375,
-						"posY": 0.9736049,
-						"posZ": -1.5,
-						"rotX": -7.70756259E-08,
-						"rotY": 180.0,
-						"rotZ": -2.68071521E-09,
-						"scaleX": 1.0,
-						"scaleY": 1.0,
-						"scaleZ": 1.0
+						"posX": '.$pos["x"].',
+						"posY":	'.$pos["y"].',
+						"posZ": '.$pos["z"].',
+						"rotX": '.$rot["x"].',
+						"rotY": '.$rot["z"].',
+						"rotZ": '.$rot["z"].',
+						"scaleX": '.$scl["x"].',
+						"scaleY": '.$scl["y"].',
+						"scaleZ": '.$scl["z"].'
 		},
 			"Nickname": "'.$nickname.'",
 			"Description": "'.$description.'",
@@ -371,15 +400,15 @@ function printJSON($cardlist, $aback = null, $aface = null){
 			"2": {
 			"Name": "Card",
 				"Transform": {
-				"posX": 12.375,
-					"posY": 0.973604858,
-					"posZ": 7.5,
-					"rotX": -2.38057556E-08,
-					"rotY": 180.0,
-					"rotZ": 2.25152735E-06,
-					"scaleX": 1.0,
-					"scaleY": 1.0,
-					"scaleZ": 1.0
+						"posX": '.$pos["x"].',
+						"posY":	'.$pos["y"].',
+						"posZ": '.$pos["z"].',
+						"rotX": '.$rot["x"].',
+						"rotY": '.$rot["z"].',
+						"rotZ": '.$rot["z"].',
+						"scaleX": '.$scl["x"].',
+						"scaleY": '.$scl["y"].',
+						"scaleZ": '.$scl["z"].'
 		},
 			"Nickname": "'.$nickname.'",
 			"Description": "'.$description.'",
@@ -425,7 +454,7 @@ function printJSON($cardlist, $aback = null, $aface = null){
 
 		} else {
 			if($aback == null){
-				$back = "https://i.imgur.com/M5v4CzN.png"; 
+				$back = $CARDBACK; 
 			} else {
 				$back = $aback;
 			}
@@ -434,15 +463,15 @@ function printJSON($cardlist, $aback = null, $aface = null){
 			'{
 			"Name": "Card",
 				"Transform": {
-				"posX": -8.189686,
-					"posY": 0.9736049,
-					"posZ": -8.728649,
-					"rotX": 3.81333543E-08,
-					"rotY": 180.0,
-					"rotZ": -3.45339885E-07,
-					"scaleX": 1.0,
-					"scaleY": 1.0,
-					"scaleZ": 1.0
+						"posX": '.$pos["x"].',
+						"posY":	'.$pos["y"].',
+						"posZ": '.$pos["z"].',
+						"rotX": '.$rot["x"].',
+						"rotY": '.$rot["z"].',
+						"rotZ": '.$rot["z"].',
+						"scaleX": '.$scl["x"].',
+						"scaleY": '.$scl["y"].',
+						"scaleZ": '.$scl["z"].'
 	},
 		"Nickname": "'.$nickname.'",
 		"Description": "'.$description.'",

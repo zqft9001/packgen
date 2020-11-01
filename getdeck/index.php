@@ -37,8 +37,37 @@ if(preg_match("<!DOCTYPE html>", $out)){
 	exit;
 }
 
+$ipos = null;
+$irot = null;
+$iscl = null;
+
+if(isset($gclean["pos"])){
+
+	$in = explode(",", $gclean["pos"]);
+
+	$ipos = [ "x" => $in[0], "y" => $in[1], "z" => $in[2] ];
+
+}
+
+if(isset($gclean["rot"])){
+
+	$in = explode(",", $gclean["rot"]);
+
+	$irot = [ "x" => $in[0], "y" => $in[1], "z" => $in[2] ];
+
+}
+
+if(isset($gclean["scl"])){
+
+	$in = explode(",", $gclean["scl"]);
+
+	$iscl = [ "x" => $in[0], "y" => $in[1], "z" => $in[2] ];
+
+}
+
 $cardnames = null;
 $cardsetnum = null;
+$section = null;
 
 $lines = null;
 preg_match_all("/(.*[^\r\n])[\r\n]*/", $out, $lines);
@@ -49,39 +78,38 @@ foreach($lines[1] as $line){
 
 	$numname = null;
 
+	$setcn = null;
+	
 	if($line != "" and preg_match("/([0-9]+)\s([^[].*)/", $line, $numname) == 1){
 
 		for($i = 0; $i < $numname[1]; $i++){
 
-			$cardnames[] = $numname[2];
+			$cardnames[] = [ "name" => $numname[2], "note" => $section ];
 
 		}
 
-	}
-
-	if($line != "" and preg_match("/([0-9]+)\s\[[A-Za-z0-9]{3}\]\s([^[].*)/", $line, $numname) == 1){
+	}elseif($line != "" and preg_match("/([0-9]+)\s\[[A-Za-z0-9]{3}\]\s([^[].*)/", $line, $numname) == 1){
 
 		for($i = 0; $i < $numname[1]; $i++){
 
-			$cardnames[] = $numname[2];
+			$cardnames[] = [ "name" => $numname[2], "note" => $section ];
 
 		}
 
-	}
-	
-	$setcn = null;
-
-	if($line != "" and preg_match("/([0-9]+).*\[(.*):(.*)\]/", $line, $setcn) == 1){
+	}elseif($line != "" and preg_match("/([0-9]+).*\[(.*):(.*)\]/", $line, $setcn) == 1){
 
 		for($i = 0; $i < $setcn[1]; $i++){
 
 			$cardsetnum[] = [
 				"set" => $setcn[2],
 				"cn" => $setcn[3],
+				"note" => $section,
 			];
 
 		}
 
+	} elseif($line != ""){
+		$section = $line;
 	}
 
 }
@@ -92,10 +120,10 @@ foreach($cardnames as $cardname){
 
 	$cnd = null;
 
-	$cnd["name"] = $cardname;
+	$cnd["name"] = $cardname["name"];
 	$card = getcard($cnd);
 	if (count($card) > 0){
-
+		$card["note"] = $cardname["note"];
 		$pack[] = $card;
 	}else{
 		//fuzzy if initial search fails
@@ -103,6 +131,7 @@ foreach($cardnames as $cardname){
 		$card = getcard($cnd);
 		//double fail gets nothing
 		if(count($card) > 0){
+			$card["note"] = $cardname["note"];
 			$pack[] = $card;
 		}
 	}
@@ -116,7 +145,7 @@ foreach($cardsetnum as $setcn){
 	$cnd["cn"] = $setcn["cn"];
 	$card = getcard($cnd);
 	if (count($card) > 0){
-
+		$card["note"] = $setcn["note"];
 		$pack[] = $card;
 	}else{
 		//fuzzy if initial search fails
@@ -124,11 +153,12 @@ foreach($cardsetnum as $setcn){
 		$card = getcard($cnd);
 		//double fail gets nothing
 		if(count($card) > 0){
+			$card["note"] = $setcn["note"];
 			$pack[] = $card;
 		}
 	}
 }
 
-printJSON($pack, $gclean["back"]);
+printJSON($pack, $gclean["back"], null, $ipos, $irot, $iscl);
 
 ?>
