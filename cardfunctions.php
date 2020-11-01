@@ -60,7 +60,7 @@ function getcard($cnd){
 	}
 
 	//gets a card from a set based on the conditions provided
-	//Gives up after 100 tries.
+	//Gives up after 1000 tries.
 
 	$conn = new mysqli(SERVERNAME, USERNAME, PASSWORD, DBNAME);
 	if ($conn->connect_error) {
@@ -72,11 +72,11 @@ function getcard($cnd){
 	$filterstart = " where ";
 	$fbuild = "";
 	$filterend = "and (cards.side IS NULL OR cards.side = 'a');";
-
+/*
 	if(isset($cnd["max cn"])){
 		$fbuild = $fbuild."and cards.number <= ".$cnd["max cn"]." ";
 	}
-
+*/
 	if(isset($cnd["cn"])){
 		if(is_numeric($cnd["cn"])){
 			$fbuild = $fbuild."and cards.number = ".$cnd["cn"]." ";
@@ -84,15 +84,15 @@ function getcard($cnd){
 			$fbuild = $fbuild."and cards.number like '".$cnd["cn"]."' ";
 		}
 	}
-
-	if($cnd["colorless"] == 1){
+/*
+	if(isset($cnd["colorless"]) and $cnd["colorless"] == 1){
 		$fbuild = $fbuild."and cards.colors is null ";
 	}
 
-	if($cnd["colorIDless"] == 1){
+	if(isset($cnd["colorIDless"]) and $cnd["colorIDless"] == 1){
 		$fbuild = $fbuild."and cards.coloridentity is null ";
 	}
-
+ 
 	if(isset($cnd["colors"])){
 		if(is_array($cnd["colors"])){
 			foreach($cnd["colors"] as $color){
@@ -112,11 +112,11 @@ function getcard($cnd){
 			$fbuild = $fbuild."and cards.coloridentity like '%".$cnd["colorIDs"]."%' ";
 		}
 	}
-
+ */
 	if(isset($cnd["set"])){
 		$fbuild = $fbuild."and cards.setCode = '".$cnd["set"]."' ";
 	}
-
+/*
 	if(isset($cnd["rarity"])){
 		$fbuild = $fbuild."and cards.rarity = '".$cnd["rarity"]."' ";
 	}
@@ -129,14 +129,14 @@ function getcard($cnd){
 		$fbuild = $fbuild."and cards.frameEffect like '%".$cnd["frameEffect"]."%' ";
 	}
 
-	if($cnd["noframeEffect"] == 1){
+	if(isset($cnd["noframeEffect"]) and $cnd["noframeEffect"] == 1){
 		$fbuild = $fbuild."and cards.frameEffect is null ";
 	}
 
 	if(isset($cnd["type"])){
 		$fbuild = $fbuild."and cards.type like '%".$cnd["type"]."%' ";
 	}
-
+ */
 	if (count($fbuild)>0){
 		$fbuild = substr($fbuild, 4);
 		$sql = $sql.$filterstart.$fbuild.$filterend;
