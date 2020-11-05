@@ -142,11 +142,13 @@ function getcard($cnd){
 		$sql = $sql.$filterstart.$fbuild.$filterend;
 	}
 
+	$bannedsets = "('4BB','FBB','PSAL','PHUK','REN','PTC', 'WC00', 'WC01', 'WC02', 'WC03', 'WC04', 'WC97', 'WC98', 'WC99', 'PRM', 'PZ2')";
+
 	if(isset($cnd["name"])){
 		if(isset($cnd["fuzzy"])){
-			$sql = "select * from cards where cards.name like \"%".$cnd["name"]."%\" and cards.setCode not in ('4BB','FBB','PSAL','PHUK','REN') and (cards.side IS NULL OR cards.side = 'a');";
+			$sql = "select * from cards where cards.name like \"%".$cnd["name"]."%\" and cards.setCode not in ".$bannedsets." and (cards.side IS NULL OR cards.side = 'a');";
 		} else {
-			$sql = "select * from cards where cards.name = \"".$cnd["name"]."\" and cards.setCode not in ('4BB','FBB','PSAL','PHUK','REN') and (cards.side IS NULL OR cards.side = 'a');";
+			$sql = "select * from cards where cards.name = \"".$cnd["name"]."\" and cards.setCode not in ".$bannedsets." and (cards.side IS NULL OR cards.side = 'a');";
 		}
 	}
 
