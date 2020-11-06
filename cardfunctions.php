@@ -48,6 +48,28 @@ function gettokens($cnd){
 
 }
 
+//gets scryfall face for meld cards
+function getmeld($otherface){
+
+	$conn = new mysqli(SERVERNAME, USERNAME, PASSWORD, DBNAME);
+	if ($conn->connect_error) {
+		die("Connection failed: " . $conn->connect_error);
+	}
+
+	$sql = "select * from cards where cards.uuid like \"".$otherface."\";";
+
+	$result = $conn->query($sql);
+
+	if ($result->num_rows < 1){
+		return "Fail to Find";
+	}
+
+	$card = $result->fetch_array();
+
+	$conn->close();
+	return $card["scryfallId"];
+
+}
 
 function getcard($cnd){
 
@@ -76,7 +98,7 @@ function getcard($cnd){
 	if(isset($cnd["max cn"])){
 		$fbuild = $fbuild."and cards.number <= ".$cnd["max cn"]." ";
 	}
-*/
+ */
 	if(isset($cnd["cn"])){
 		if(is_numeric($cnd["cn"])){
 			$fbuild = $fbuild."and cards.number = ".$cnd["cn"]." ";
@@ -92,7 +114,7 @@ function getcard($cnd){
 	if(isset($cnd["colorIDless"]) and $cnd["colorIDless"] == 1){
 		$fbuild = $fbuild."and cards.coloridentity is null ";
 	}
- 
+
 	if(isset($cnd["colors"])){
 		if(is_array($cnd["colors"])){
 			foreach($cnd["colors"] as $color){
@@ -335,7 +357,7 @@ function printJSON($cardlist, $aback = null, $aface = null, $apos = null, $arot 
 		}
 
 		$nickname = addslashes($card["name"]).' | '.$card["type"].' | CMC'.$card["convertedManaCost"];
-		
+
 		$description = addslashes($card["text"]).' | '.$card["setCode"].':'.$card["number"].' | '.$note;
 		if(isset($aface) and $aface != ""){
 			$face = $aface;
@@ -344,14 +366,18 @@ function printJSON($cardlist, $aback = null, $aface = null, $apos = null, $arot 
 		} else {
 			$face = 'https://c1.scryfall.com/file/scryfall-cards/normal/front/'.substr($card["scryfallId"],0,1).'/'.substr($card["scryfallId"],1,1).'/'.$card["scryfallId"].'.jpg';
 		}
-		if(strpos($card["layout"], "dfc") != false or strpos($card["frameEffects"], "dfc")){
-			$dfcback = 'https://c1.scryfall.com/file/scryfall-cards/normal/back/'.substr($card["scryfallId"],0,1).'/'.substr($card["scryfallId"],1,1).'/'.$card["scryfallId"].'.jpg';
-
+		if($card["otherFaceIds"] != null){
+			if($card["layout"] == "meld"){
+				$meldface = getmeld($card["otherFaceIds"]);
+				$dfcback = 'https://c1.scryfall.com/file/scryfall-cards/normal/front/'.substr($meldface,0,1).'/'.substr($meldface,1,1).'/'.$meldface.'.jpg';
+			} else {
+				$dfcback = 'https://c1.scryfall.com/file/scryfall-cards/normal/back/'.substr($card["scryfallId"],0,1).'/'.substr($card["scryfallId"],1,1).'/'.$card["scryfallId"].'.jpg';
+			}
 			echo
 				'{
 				"Name": "Card",
 					"Transform": {
-						"posX": '.$pos["x"].',
+					"posX": '.$pos["x"].',
 						"posY":	'.$pos["y"].',
 						"posZ": '.$pos["z"].',
 						"rotX": '.$rot["x"].',
@@ -402,15 +428,15 @@ function printJSON($cardlist, $aback = null, $aface = null, $apos = null, $arot 
 			"2": {
 			"Name": "Card",
 				"Transform": {
-						"posX": '.$pos["x"].',
-						"posY":	'.$pos["y"].',
-						"posZ": '.$pos["z"].',
-						"rotX": '.$rot["x"].',
-						"rotY": '.$rot["z"].',
-						"rotZ": '.$rot["z"].',
-						"scaleX": '.$scl["x"].',
-						"scaleY": '.$scl["y"].',
-						"scaleZ": '.$scl["z"].'
+				"posX": '.$pos["x"].',
+					"posY":	'.$pos["y"].',
+					"posZ": '.$pos["z"].',
+					"rotX": '.$rot["x"].',
+					"rotY": '.$rot["z"].',
+					"rotZ": '.$rot["z"].',
+					"scaleX": '.$scl["x"].',
+					"scaleY": '.$scl["y"].',
+					"scaleZ": '.$scl["z"].'
 		},
 			"Nickname": "'.$nickname.'",
 			"Description": "'.$description.'",
@@ -452,7 +478,7 @@ function printJSON($cardlist, $aback = null, $aface = null, $apos = null, $arot 
 		}
 		}
 		}';
-		echo "@";
+echo "@";
 
 		} else {
 			if($aback == null){
@@ -460,12 +486,12 @@ function printJSON($cardlist, $aback = null, $aface = null, $apos = null, $arot 
 			} else {
 				$back = $aback;
 			}
-		$deckid = $deckid + 1;
-		echo
-			'{
-			"Name": "Card",
-				"Transform": {
-						"posX": '.$pos["x"].',
+			$deckid = $deckid + 1;
+			echo
+				'{
+				"Name": "Card",
+					"Transform": {
+					"posX": '.$pos["x"].',
 						"posY":	'.$pos["y"].',
 						"posZ": '.$pos["z"].',
 						"rotX": '.$rot["x"].',
@@ -474,45 +500,45 @@ function printJSON($cardlist, $aback = null, $aface = null, $apos = null, $arot 
 						"scaleX": '.$scl["x"].',
 						"scaleY": '.$scl["y"].',
 						"scaleZ": '.$scl["z"].'
-	},
-		"Nickname": "'.$nickname.'",
-		"Description": "'.$description.'",
-		"GMNotes": "",
-		"ColorDiffuse": {
-		"r": 0.713235259,
-			"g": 0.713235259,
-			"b": 0.713235259
-	},
-		"Locked": false,
-		"Grid": true,
-		"Snap": true,
-		"IgnoreFoW": false,
-		"MeasureMovement": false,
-		"DragSelectable": true,
-		"Autoraise": true,
-		"Sticky": true,
-		"Tooltip": true,
-		"GridProjection": false,
-		"HideWhenFaceDown": true,
-		"Hands": true,
-		"CardID": 100,
-		"SidewaysCard": false,
-		"CustomDeck": {
-		"1": {
-		"FaceURL": "'.$face.'",
-			"BackURL": "'.$back.'",
-			"NumWidth": 1,
-			"NumHeight": 1,
-			"BackIsHidden": true,
-			"UniqueBack": false,
-			"Type": 0
-	}
-	},
-		"LuaScript": "",
-		"LuaScriptState": "",
-		"XmlUI": "",
-		"GUID": "947dc9"
-	}'
+		},
+			"Nickname": "'.$nickname.'",
+			"Description": "'.$description.'",
+			"GMNotes": "",
+			"ColorDiffuse": {
+			"r": 0.713235259,
+				"g": 0.713235259,
+				"b": 0.713235259
+		},
+			"Locked": false,
+			"Grid": true,
+			"Snap": true,
+			"IgnoreFoW": false,
+			"MeasureMovement": false,
+			"DragSelectable": true,
+			"Autoraise": true,
+			"Sticky": true,
+			"Tooltip": true,
+			"GridProjection": false,
+			"HideWhenFaceDown": true,
+			"Hands": true,
+			"CardID": 100,
+			"SidewaysCard": false,
+			"CustomDeck": {
+			"1": {
+			"FaceURL": "'.$face.'",
+				"BackURL": "'.$back.'",
+				"NumWidth": 1,
+				"NumHeight": 1,
+				"BackIsHidden": true,
+				"UniqueBack": false,
+				"Type": 0
+		}
+		},
+			"LuaScript": "",
+			"LuaScriptState": "",
+			"XmlUI": "",
+			"GUID": "947dc9"
+		}'
 	;
 		echo "@";
 		}
