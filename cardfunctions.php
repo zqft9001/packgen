@@ -430,7 +430,7 @@ function printJSON($cardlist, $aback = null, $aface = null, $apos = null, $arot 
 			"Sticky": true,
 			"Tooltip": true,
 			"GridProjection": false,
-			"HideWhenFaceDown": true,
+			"HideWhenFaceDown": false,
 			"Hands": true,
 			"CardID": 100,
 			"SidewaysCard": false,
