@@ -318,7 +318,7 @@ function printcards($cardlist){
 }
 
 
-function printJSON($cardlist, $aback = null, $aface = null, $apos = null, $arot = null, $ascl = null, $note = null){
+function printJSON($cardlist, $aback = null, $aface = null, $apos = null, $arot = null, $ascl = null, $anote = null){
 
 	include('JSONdefs.php');
 
@@ -346,19 +346,21 @@ function printJSON($cardlist, $aback = null, $aface = null, $apos = null, $arot 
 		$scl = $ascl;
 	}
 
+	$note = $anote;
+
 	foreach($cardlist as $card){
 
 		if(isset($card["note"])){
 			//new notes change position of pile
-			if($note != $card["note"]){
+			if($note != $card["note"]." ".$anote){
 				$pos["x"] = $pos["x"] + 3;
 			}
-			$note = $card["note"];
+			$note = $card["note"]." ".$anote;
 		}
 
-		$nickname = addslashes($card["name"]).' | '.$card["type"].' | CMC'.$card["convertedManaCost"];
+		$nickname = addslashes($card["name"]).' | '.$card["type"].' | CMC'.$card["convertedManaCost"].' | '.$note;
 
-		$description = addslashes($card["text"]).' | '.$card["setCode"].':'.$card["number"].' | '.$note;
+		$description = addslashes($card["text"]).' | '.$card["setCode"].':'.$card["number"];
 		if(isset($aface) and $aface != ""){
 			$face = $aface;
 		}elseif(isset($card["image"])){

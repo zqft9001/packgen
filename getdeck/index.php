@@ -159,6 +159,6 @@ foreach($cardsetnum as $setcn){
 	}
 }
 
-printJSON($pack, $gclean["back"], null, $ipos, $irot, $iscl);
+printJSON($pack, $gclean["back"], null, $ipos, $irot, $iscl, $gclean["note"]);
 
 ?>
