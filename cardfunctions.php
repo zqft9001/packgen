@@ -164,7 +164,7 @@ function getcard($cnd){
 		$sql = $sql.$filterstart.$fbuild.$filterend;
 	}
 
-	$bannedsets = "('4BB','FBB','PSAL','PHUK','REN','PTC', 'WC00', 'WC01', 'WC02', 'WC03', 'WC04', 'WC97', 'WC98', 'WC99', 'PRM', 'PZ2')";
+	$bannedsets = "('4BB','FBB','PSAL','PHUK','REN','PTC', 'WC00', 'WC01', 'WC02', 'WC03', 'WC04', 'WC97', 'WC98', 'WC99', 'AJMP', 'AKR', 'ANA', 'ANB', 'HA1', 'HA2', 'HA3', 'ME1', 'ME2', 'ME3', 'ME4', 'PANA', 'PAST', 'PMOA', 'PRM', 'PZ1', 'PZ2', 'TD0', 'TD2', 'TPR', 'VMA', 'XANA')";
 
 	if(isset($cnd["name"])){
 		if(isset($cnd["fuzzy"])){
