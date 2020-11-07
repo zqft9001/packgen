@@ -322,6 +322,8 @@ function printJSON($cardlist, $aback = null, $aface = null, $apos = null, $arot 
 
 	include('JSONdefs.php');
 
+	$JSON = null;
+
 	if($aback == null){
 		$back = $CARDBACK; 
 	} else {
@@ -375,8 +377,7 @@ function printJSON($cardlist, $aback = null, $aface = null, $apos = null, $arot 
 			} else {
 				$dfcback = 'https://c1.scryfall.com/file/scryfall-cards/normal/back/'.substr($card["scryfallId"],0,1).'/'.substr($card["scryfallId"],1,1).'/'.$card["scryfallId"].'.jpg';
 			}
-			echo
-				'{
+			$JSON = $JSON.'{
 				"Name": "Card",
 					"Transform": {
 					"posX": '.$pos["x"].',
@@ -479,8 +480,7 @@ function printJSON($cardlist, $aback = null, $aface = null, $apos = null, $arot 
 			"GUID": "947dc9"
 		}
 		}
-		}';
-echo "@";
+		}@';
 
 		} else {
 			if($aback == null){
@@ -489,8 +489,7 @@ echo "@";
 				$back = $aback;
 			}
 			$deckid = $deckid + 1;
-			echo
-				'{
+			$JSON = $JSON.'{
 				"Name": "Card",
 					"Transform": {
 					"posX": '.$pos["x"].',
@@ -540,9 +539,8 @@ echo "@";
 			"LuaScriptState": "",
 			"XmlUI": "",
 			"GUID": "947dc9"
-		}'
-	;
-		echo "@";
+		}@';
 		}
 	}
+	echo $JSON;
 }
