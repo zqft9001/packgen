@@ -133,6 +133,8 @@ foreach($cardnames as $cardname){
 		if(count($card) > 0){
 			$card["note"] = $cardname["note"];
 			$pack[] = $card;
+		} else {
+			$card["note"] = "Fail to Find";
 		}
 	}
 }

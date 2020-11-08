@@ -164,13 +164,14 @@ function getcard($cnd){
 		$sql = $sql.$filterstart.$fbuild.$filterend;
 	}
 
-	$bannedsets = "('4BB','FBB','PSAL','PHUK','REN','PTC', 'WC00', 'WC01', 'WC02', 'WC03', 'WC04', 'WC97', 'WC98', 'WC99', 'AJMP', 'AKR', 'ANA', 'ANB', 'HA1', 'HA2', 'HA3', 'ME1', 'ME2', 'ME3', 'ME4', 'PANA', 'PAST', 'PMOA', 'PRM', 'PZ1', 'PZ2', 'TD0', 'TD2', 'TPR', 'VMA', 'XANA')";
+	$bannedsets = "and isOnlineOnly = 0 and borderColor <> 'gold' and cards.setCode not in ('4BB', 'FBB', 'PHJ', 'PJJT', 'PMPS', 'PSAL', 'PMPS06', 'PMPS07', 'PMPS08', 'PMPS09', 'PMPS10', 'PMPS11', 'PRED', 'PS11', 'REN', 'RIN') ";
 
 	if(isset($cnd["name"])){
+
 		if(isset($cnd["fuzzy"])){
-			$sql = "select * from cards where cards.name like \"%".$cnd["name"]."%\" and cards.setCode not in ".$bannedsets." and (cards.side IS NULL OR cards.side = 'a');";
+			$sql = "select * from cards where cards.name like \"%".$cnd["name"]."%\" ".$bannedsets.$filterend;
 		} else {
-			$sql = "select * from cards where cards.name = \"".$cnd["name"]."\" and cards.setCode not in ".$bannedsets." and (cards.side IS NULL OR cards.side = 'a');";
+			$sql = "select * from cards where cards.name = \"".$cnd["name"]."\" ".$bannedsets.$filterend;
 		}
 	}
 
@@ -182,7 +183,7 @@ function getcard($cnd){
 	if(isset($cnd["multiverseid"])){
 		$sql = "select * from cards where cards.multiverseid = '".$cnd["multiverseid"]."';";
 	}
-
+	
 	if(isset($cnd["sql"])){
 		echo $sql."\n";
 	}
