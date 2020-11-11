@@ -67,7 +67,7 @@ function getmeld($otherface){
 	$card = $result->fetch_array();
 
 	$conn->close();
-	return $card["scryfallId"];
+	return $card;
 
 }
 
@@ -310,9 +310,9 @@ function printcards($cardlist){
 	//Prints the list of cards in the pack.
 	foreach($cardlist as $card){
 		if($card["type"] == "Phone Card"){
-			echo "1 ".$card["image"]." ".$card["name"];
+			echo "1 ",$card["image"]," ",$card["name"];
 		}else{
-			echo "1 [".$card["setCode"].":".preg_replace("/[^a-zA-Z0-9]+/", "", $card["number"])."] ".$card["name"];
+			echo "1 [",$card["setCode"],":",preg_replace("/[^a-zA-Z0-9]+/", "", $card["number"])."] ",$card["name"];
 		}
 		echo "\n";
 	}	
@@ -362,8 +362,35 @@ function printJSON($cardlist, $aback = null, $aface = null, $apos = null, $arot 
 		}
 
 		$nickname = addslashes($card["name"]).' | '.$card["type"].' | CMC'.$card["convertedManaCost"].' | '.$note;
+		$dfctext = null;
+		$description = $card["text"]."\n";
 
-		$description = addslashes($card["text"]).' | '.$card["setCode"].':'.$card["number"];
+		if(isset($card["power"])){
+			$description = $description."\n".$card["power"]."/".$card["toughness"]."\n";	
+		}
+
+		if(isset($card["loyalty"])){
+			$description = $description."\n".$card["loyalty"]." Loyalty\n";
+		}
+
+		if(isset($card["otherFaceIds"])){
+			foreach(explode(",",$card["otherFaceIds"]) as $otherface){
+				$othercard = getmeld($otherface);
+
+			$description = $description."\n//\n\n".$othercard["text"]."\n";
+		if(isset($othercard["power"])){
+			$description = $description."\n".$othercard["power"]."/".$othercard["toughness"]."\n";	
+		}
+		if(isset($othercard["loyalty"])){
+			$description = $description."\n".$othercard["loyalty"]." Loyalty\n";
+		}
+		}
+		}
+
+		$description =  $description."\n".$card["setCode"].':'.$card["number"];
+
+		$description = addslashes($description);
+
 		if(isset($aface) and $aface != ""){
 			$face = $aface;
 		}elseif(isset($card["image"])){
@@ -371,28 +398,28 @@ function printJSON($cardlist, $aback = null, $aface = null, $apos = null, $arot 
 		} else {
 			$face = 'https://c1.scryfall.com/file/scryfall-cards/normal/front/'.substr($card["scryfallId"],0,1).'/'.substr($card["scryfallId"],1,1).'/'.$card["scryfallId"].'.jpg';
 		}
-		if($card["otherFaceIds"] != null){
+		if($card["otherFaceIds"] != null and $card["layout"] != "split" and $card["layout"] != "aftermath" and $card["layout"] != "flip"){
 			if($card["layout"] == "meld"){
-				$meldface = getmeld($card["otherFaceIds"]);
+				$meldface = getmeld($card["otherFaceIds"])["scryfallId"];
 				$dfcback = 'https://c1.scryfall.com/file/scryfall-cards/normal/front/'.substr($meldface,0,1).'/'.substr($meldface,1,1).'/'.$meldface.'.jpg';
 			} else {
 				$dfcback = 'https://c1.scryfall.com/file/scryfall-cards/normal/back/'.substr($card["scryfallId"],0,1).'/'.substr($card["scryfallId"],1,1).'/'.$card["scryfallId"].'.jpg';
 			}
-			$JSON = $JSON.'{
+			echo '{
 				"Name": "Card",
 					"Transform": {
-					"posX": '.$pos["x"].',
-						"posY":	'.$pos["y"].',
-						"posZ": '.$pos["z"].',
-						"rotX": '.$rot["x"].',
-						"rotY": '.$rot["z"].',
-						"rotZ": '.$rot["z"].',
-						"scaleX": '.$scl["x"].',
-						"scaleY": '.$scl["y"].',
-						"scaleZ": '.$scl["z"].'
+					"posX": ',$pos["x"],',
+						"posY":	',$pos["y"],',
+						"posZ": ',$pos["z"],',
+						"rotX": ',$rot["x"],',
+						"rotY": ',$rot["z"],',
+						"rotZ": ',$rot["z"],',
+						"scaleX": ',$scl["x"],',
+						"scaleY": ',$scl["y"],',
+						"scaleZ": ',$scl["z"],'
 		},
-			"Nickname": "'.$nickname.'",
-			"Description": "'.$description.'",
+			"Nickname": "',$nickname,'",
+			"Description": "',$description,'",
 			"GMNotes": "",
 			"ColorDiffuse": {
 			"r": 0.713235259,
@@ -415,8 +442,8 @@ function printJSON($cardlist, $aback = null, $aface = null, $apos = null, $arot 
 			"SidewaysCard": false,
 			"CustomDeck": {
 			"1": {
-			"FaceURL": "'.$face.'",
-				"BackURL": "'.$back.'",
+			"FaceURL": "',$face,'",
+				"BackURL": "',$back,'",
 				"NumWidth": 1,
 				"NumHeight": 1,
 				"BackIsHidden": true,
@@ -432,18 +459,18 @@ function printJSON($cardlist, $aback = null, $aface = null, $apos = null, $arot 
 			"2": {
 			"Name": "Card",
 				"Transform": {
-				"posX": '.$pos["x"].',
-					"posY":	'.$pos["y"].',
-					"posZ": '.$pos["z"].',
-					"rotX": '.$rot["x"].',
-					"rotY": '.$rot["z"].',
-					"rotZ": '.$rot["z"].',
-					"scaleX": '.$scl["x"].',
-					"scaleY": '.$scl["y"].',
-					"scaleZ": '.$scl["z"].'
+				"posX": ',$pos["x"],',
+					"posY":	',$pos["y"],',
+					"posZ": ',$pos["z"],',
+					"rotX": ',$rot["x"],',
+					"rotY": ',$rot["z"],',
+					"rotZ": ',$rot["z"],',
+					"scaleX": ',$scl["x"],',
+					"scaleY": ',$scl["y"],',
+					"scaleZ": ',$scl["z"],'
 		},
-			"Nickname": "'.$nickname.'",
-			"Description": "'.$description.'",
+			"Nickname": "',$nickname,'",
+			"Description": "',$description,'",
 			"GMNotes": "",
 			"ColorDiffuse": {
 			"r": 0.713235259,
@@ -466,8 +493,8 @@ function printJSON($cardlist, $aback = null, $aface = null, $apos = null, $arot 
 			"SidewaysCard": false,
 			"CustomDeck": {
 			"1": {
-			"FaceURL": "'.$face.'",
-				"BackURL": "'.$dfcback.'",
+			"FaceURL": "',$face,'",
+				"BackURL": "',$dfcback,'",
 				"NumWidth": 1,
 				"NumHeight": 1,
 				"BackIsHidden": true,
@@ -490,21 +517,21 @@ function printJSON($cardlist, $aback = null, $aface = null, $apos = null, $arot 
 				$back = $aback;
 			}
 			$deckid = $deckid + 1;
-			$JSON = $JSON.'{
+			echo '{
 				"Name": "Card",
 					"Transform": {
-					"posX": '.$pos["x"].',
-						"posY":	'.$pos["y"].',
-						"posZ": '.$pos["z"].',
-						"rotX": '.$rot["x"].',
-						"rotY": '.$rot["z"].',
-						"rotZ": '.$rot["z"].',
-						"scaleX": '.$scl["x"].',
-						"scaleY": '.$scl["y"].',
-						"scaleZ": '.$scl["z"].'
+					"posX": ',$pos["x"],',
+						"posY":	',$pos["y"],',
+						"posZ": ',$pos["z"],',
+						"rotX": ',$rot["x"],',
+						"rotY": ',$rot["z"],',
+						"rotZ": ',$rot["z"],',
+						"scaleX": ',$scl["x"],',
+						"scaleY": ',$scl["y"],',
+						"scaleZ": ',$scl["z"],'
 		},
-			"Nickname": "'.$nickname.'",
-			"Description": "'.$description.'",
+			"Nickname": "',$nickname,'",
+			"Description": "',$description,'",
 			"GMNotes": "",
 			"ColorDiffuse": {
 			"r": 0.713235259,
@@ -527,8 +554,8 @@ function printJSON($cardlist, $aback = null, $aface = null, $apos = null, $arot 
 			"SidewaysCard": false,
 			"CustomDeck": {
 			"1": {
-			"FaceURL": "'.$face.'",
-				"BackURL": "'.$back.'",
+			"FaceURL": "',$face,'",
+				"BackURL": "',$back,'",
 				"NumWidth": 1,
 				"NumHeight": 1,
 				"BackIsHidden": true,
@@ -543,5 +570,4 @@ function printJSON($cardlist, $aback = null, $aface = null, $apos = null, $arot 
 		}@';
 		}
 	}
-	echo $JSON;
 }
