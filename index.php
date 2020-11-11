@@ -81,15 +81,8 @@ $custom = strtolower($gclean["custom"]);
 //define array for adding cards to a pack
 $pack = array();
 
-
-//grabs a random keyrune if not provided. always one with a booster.
-
-if ($set == ""){
-	$set = $conn->query("select randrune();")->fetch_assoc()["randrune()"];	
-}
-
 //get set info
-$sql = "SELECT * FROM sets where sets.keyruneCode like '%".$set."%' and sets.booster is not null;";
+$sql = "SELECT * FROM sets where sets.keyruneCode like '%".$set."%' and sets.booster is not null order by rand() limit 1;";
 
 $result = $conn->query($sql);
 
