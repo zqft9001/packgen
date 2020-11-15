@@ -323,6 +323,8 @@ function printJSON($cardlist, $aback = null, $aface = null, $apos = null, $arot 
 
 	include('JSONdefs.php');
 
+	//var_dump($arot);
+
 	$JSON = null;
 
 	if($aback == null){
@@ -348,6 +350,8 @@ function printJSON($cardlist, $aback = null, $aface = null, $apos = null, $arot 
 	} else {
 		$scl = $ascl;
 	}
+
+	//var_dump($rot);
 
 	$note = $anote;
 
@@ -431,7 +435,7 @@ function printJSON($cardlist, $aback = null, $aface = null, $apos = null, $arot 
 					"posY":	',$pos["y"],',
 					"posZ": ',$pos["z"],',
 					"rotX": ',$rot["x"],',
-					"rotY": ',$rot["z"],',
+					"rotY": ',$rot["y"],',
 					"rotZ": ',$rot["z"],',
 					"scaleX": ',$scl["x"],',
 					"scaleY": ',$scl["y"],',
@@ -482,7 +486,7 @@ function printJSON($cardlist, $aback = null, $aface = null, $apos = null, $arot 
 					"posY":	',$pos["y"],',
 					"posZ": ',$pos["z"],',
 					"rotX": ',$rot["x"],',
-					"rotY": ',$rot["z"],',
+					"rotY": ',$rot["y"],',
 					"rotZ": ',$rot["z"],',
 					"scaleX": ',$scl["x"],',
 					"scaleY": ',$scl["y"],',
@@ -543,7 +547,7 @@ function printJSON($cardlist, $aback = null, $aface = null, $apos = null, $arot 
 					"posY":	',$pos["y"],',
 					"posZ": ',$pos["z"],',
 					"rotX": ',$rot["x"],',
-					"rotY": ',$rot["z"],',
+					"rotY": ',$rot["y"],',
 					"rotZ": ',$rot["z"],',
 					"scaleX": ',$scl["x"],',
 					"scaleY": ',$scl["y"],',
