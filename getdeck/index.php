@@ -74,7 +74,7 @@ preg_match_all("/(.*[^\r\n])[\r\n]*/", $out, $lines);
 
 foreach($lines[1] as $line){
 
-	$line = str_replace(" / ", " // ", $line);
+	$line = preg_replace("/\s?\/{1,2}\s?/", " // ", $line);
 
 	$numname = null;
 
