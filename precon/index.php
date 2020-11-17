@@ -24,19 +24,6 @@ foreach ($_GET as $key => $value){
 	$gclean[$key]=$conn->escape_string($value);
 }
 
-$ch = curl_init($gclean["url"]);
-curl_setopt($ch, CURLOPT_HEADER, 0);
-curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
-
-$out = curl_exec($ch);
-
-curl_close($ch);
-
-if(preg_match("<!DOCTYPE html>", $out)){
-	echo "Invalid Format";
-	exit;
-}
-
 $ipos = null;
 $irot = null;
 $iscl = null;
@@ -65,54 +52,35 @@ if(isset($gclean["scl"])){
 
 }
 
-$cardnames = null;
-$cardsetnum = null;
-$section = null;
+$alldecks = scandir("./json");
 
-$lines = null;
-preg_match_all("/(.*[^\r\n])[\r\n]*/", $out, $lines);
+$decks = null;
 
-foreach($lines[1] as $line){
+if(isset($gclean["JMP"])){
 
-	$line = preg_replace("/\s?\/{1,2}\s?/", " // ", $line);
+	foreach($alldecks as $deck){
+		if(preg_match("/.*JMP.*/", $deck)){
+			$decks[] = $deck;
+		}
+	}
 
-	$numname = null;
+	shuffle($decks);
 
-	$setcn = null;
+
+	for($i = 0; $i < 2; $i++){
+
+		$json = json_decode(file_get_contents("./json/".$decks[$i]), true)["data"]["mainBoard"];
+
+		foreach($json as $card){
+			echo $card["count"]." [".$card["setCode"].":".$card["number"]."] ".$card["name"]."\n";
+		}
 	
-	if($line != "" and preg_match("/([0-9]+)\s([^[].*)/", $line, $numname) == 1){
-
-		for($i = 0; $i < $numname[1]; $i++){
-
-			$cardnames[] = [ "name" => $numname[2], "note" => $section ];
-
-		}
-
-	}elseif($line != "" and preg_match("/([0-9]+)\s\[[A-Za-z0-9]{3}\]\s([^[].*)/", $line, $numname) == 1){
-
-		for($i = 0; $i < $numname[1]; $i++){
-
-			$cardnames[] = [ "name" => $numname[2], "note" => $section ];
-
-		}
-
-	}elseif($line != "" and preg_match("/([0-9]+).*\[(.*):(.*)\]/", $line, $setcn) == 1){
-
-		for($i = 0; $i < $setcn[1]; $i++){
-
-			$cardsetnum[] = [
-				"set" => $setcn[2],
-				"cn" => $setcn[3],
-				"note" => $section,
-			];
-
-		}
-
-	} elseif($line != ""){
-		$section = $line;
 	}
 
 }
+
+
+exit;
 
 $pack = null;
 
