@@ -412,6 +412,10 @@ function printJSON($cardlist, $aback = null, $aface = null, $apos = null, $arot 
 			$description = $description."\nSource(s): ".$card["reverseRelated"];
 		}
 
+		if(isset($card["cutsheet"])){
+			$description = $description."\nCutsheet: ".$card["cutsheet"];
+		}
+
 		$description = addslashes($description);
 
 		if(isset($aface) and $aface != ""){

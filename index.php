@@ -202,7 +202,7 @@ foreach($layout["contents"] as $rarity=>$amount){
 						goto redopick;
 					}
 					cardtopack:
-					$card["text"] = $card["text"]." | ".$rarity;
+					$card["cutsheet"] = $rarity;
 					$pack[] = $card;
 					$idpack[] = $cardid;
 					break;
