@@ -116,28 +116,21 @@ foreach($lines[1] as $line){
 
 $pack = null;
 
+if(isset($cardnames)){
+
 foreach($cardnames as $cardname){
 
 	$cnd = null;
 
 	$cnd["name"] = $cardname["name"];
-	$card = getcard($cnd);
-	if (count($card) > 0){
-		$card["note"] = $cardname["note"];
-		$pack[] = $card;
-	}else{
-		//fuzzy if initial search fails
-		$cnd["fuzzy"]="yes";
-		$card = getcard($cnd);
-		//double fail gets nothing
-		if(count($card) > 0){
-			$card["note"] = $cardname["note"];
-			$pack[] = $card;
-		} else {
-			$card["note"] = "Fail to Find";
-		}
-	}
+	$card = fuzzyget($cnd)[0];
+	$card["note"] = $setcn["note"];
+	$pack[] = $card;
 }
+
+}
+
+if(isset($cardsetnum)){
 
 foreach($cardsetnum as $setcn){
 
@@ -145,22 +138,24 @@ foreach($cardsetnum as $setcn){
 
 	$cnd["set"] = $setcn["set"];
 	$cnd["cn"] = $setcn["cn"];
-	$card = getcard($cnd);
-	if (count($card) > 0){
-		$card["note"] = $setcn["note"];
-		$pack[] = $card;
-	}else{
-		//fuzzy if initial search fails
-		$cnd["fuzzy"]="yes";
-		$card = getcard($cnd);
-		//double fail gets nothing
-		if(count($card) > 0){
-			$card["note"] = $setcn["note"];
-			$pack[] = $card;
-		}
-	}
+	$card = fuzzyget($cnd)[0];
+	$card["note"] = $setcn["note"];
+	$pack[] = $card;
 }
 
-printJSON($pack, $gclean["back"], null, $ipos, $irot, $iscl, $gclean["note"]);
+}
+
+$back = null;
+$note = null;
+
+if(isset($gclean["back"])){
+	$back = $clean["back"];
+}
+
+if(isset($gclean["note"])){
+	$note = $gclean["note"];
+}
+
+printJSON($pack, $back, null, $ipos, $irot, $iscl, $note);
 
 ?>

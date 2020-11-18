@@ -188,7 +188,7 @@ foreach($layout["contents"] as $rarity=>$amount){
 					goto redopick;					
 				} else {
 					$cnd["id"] = $cardid;
-					$card = getcard($cnd);
+					$card = fuzzyget($cnd)[0];
 					
 					$colors = explode(",", $card["colors"]);
 
@@ -202,7 +202,7 @@ foreach($layout["contents"] as $rarity=>$amount){
 						goto redopick;
 					}
 					cardtopack:
-					$card["cutsheet"] = $rarity;
+					$card["cutsheet"] = "Cutsheet: ".$rarity;
 					$pack[] = $card;
 					$idpack[] = $cardid;
 					break;

@@ -94,26 +94,7 @@ $cnd["allprints"] = $gclean["allprints"];
 //get by gatherer
 $cnd["multiverseid"] = $gclean["multiverseid"];
 
-$card = getcard($cnd);
-
-if (count($card) > 0){
-	$pack = $card;
-}else{
-	//fuzzy if initial search fails
-	$cnd["fuzzy"]="yes";
-	$cnd["allprints"]="yes";
-	$card = getcard($cnd);
-	
-	//double fail gets nothing
-	if(count($card) > 0){
-		$pack = $card;
-	}
-}
-
-if(!isset($cnd["allprints"])){
-	$pack = null;
-	$pack[] = $card;
-}
+$pack = fuzzyget($cnd);
 
 if(isset($gclean["packcheck"])){
 	print_r($pack);

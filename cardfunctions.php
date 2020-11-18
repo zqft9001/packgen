@@ -1,6 +1,18 @@
 <?php
 
+$FailtoFind = [
+	"name" => "Fail to Find",
+	"type" => "Error Message",
+	"convertedManaCost" => 404,
+	"text" => "Failed to find\n",
+	"image" => "https://i.imgur.com/jOI0aAE.png",
+	"setCode" => "errors",
+	"number" => 404
+];
+
 function gettokens($cnd){
+
+	global $FailtoFind;
 
 
 	if(strlen($cnd["name"]) <= 0){
@@ -33,10 +45,6 @@ function gettokens($cnd){
 
 	$result = $conn->query($sql);
 
-	if ($result->num_rows < 1){
-		return;
-	}
-
 	for($i = 0; $i < $result->num_rows; $i = $i + 1){
 		$result->data_seek($i);
 		$pack[] = $result->fetch_array();
@@ -44,7 +52,15 @@ function gettokens($cnd){
 
 	$conn->close();
 
-	return $pack;
+	if(count($pack)>0){
+		return $pack;
+	} else {
+		$F2F = $FailtoFind;
+		foreach($cnd as $key=>$value){
+			$F2F["text"] = $F2F["text"].$key.": ".$value."\n";
+		}
+		return array($F2F);
+	}
 
 }
 
@@ -68,6 +84,54 @@ function getother($otherface){
 
 	$conn->close();
 	return $card;
+
+}
+
+
+//always returns an array with one or more cards in it.
+
+function fuzzyget($variant, $condition = null){
+
+	global $FailtoFind;
+
+	$F2F = $FailtoFind;
+
+	if(isset($condition)){
+
+		$cnd = null;
+		$cnd[$condition] = $variant;
+		$card = getcard($cnd);
+		if(count($card) > 0){
+			return $card;
+		} else {
+			$cnd["fuzzy"] = "yes";
+			$card = getcard($cnd);
+			if(count($card) > 0){
+				return $card;
+			} else {
+				$F2F["text"] = $F2F["text"].$condition.": ".$variant."\n";
+				return array($F2F);
+			}
+		}
+
+	} else {
+		$card = getcard($variant);
+		if(count($card) > 0){
+			return $card;
+		} else {
+			$cvar = $variant;
+			$cvar["fuzzy"] = "yes";
+			$card = getcard($cvar);
+			if(count($card) > 0){
+				return $card;
+			} else {
+				foreach($variant as $key=>$value){
+					$F2F["text"] = $F2F["text"].$key.": ".$value."\n";
+				}
+				return array($F2F);
+			}
+		}
+	}
 
 }
 
@@ -200,7 +264,7 @@ function getcard($cnd){
 			$pack[] = $result->fetch_array();
 		}
 
-		if($cnd["sql"] != null){
+		if(isset($cnd["sql"])){
 			print_r($pack);
 		}
 		$conn->close();
@@ -211,11 +275,11 @@ function getcard($cnd){
 		$result->data_seek($card);
 		$card = $result->fetch_array();
 
-		if($cnd["sql"] != null){
-			print_r($card);
+		if(isset($cnd["sql"])){
+			print_r(array($card));
 		}
 		$conn->close();
-		return $card;
+		return array($card);
 	}
 
 
@@ -363,6 +427,8 @@ function printJSON($cardlist, $aback = null, $aface = null, $apos = null, $arot 
 
 		$nickname = null;
 
+		$uuid = $card["uuid"];
+
 
 		if(isset($card["note"])){
 			//new notes change position of pile
@@ -401,11 +467,11 @@ function printJSON($cardlist, $aback = null, $aface = null, $apos = null, $arot 
 		}
 
 		if(strpos($description, "reate") or strpos($description, "emblem")){
-		$script = "self.addContextMenuItem('Get Token(s)', function() local porter = getObjectFromGUID('e5d411') porter.call('selftoken', {name=\\\"".addslashes($card["name"])."\\\", ref=self, owner=\\\"".$note."\\\"}) end)";
+			$script = "self.addContextMenuItem('Get Token(s)', function() local porter = getObjectFromGUID('e5d411') porter.call('selftoken', {name=\\\"".addslashes($card["name"])."\\\", ref=self, owner=\\\"".$note."\\\"}) end)";
 		} else {
 			$script = null;
 		}
-		
+
 		$description =  $description."\n".$card["setCode"].':'.$card["number"];
 
 		if(isset($card["reverseRelated"])){
@@ -413,7 +479,7 @@ function printJSON($cardlist, $aback = null, $aface = null, $apos = null, $arot 
 		}
 
 		if(isset($card["cutsheet"])){
-			$description = $description."\nCutsheet: ".$card["cutsheet"];
+			$description = $description."\n".$card["cutsheet"];
 		}
 
 		$description = addslashes($description);
@@ -447,7 +513,7 @@ function printJSON($cardlist, $aback = null, $aface = null, $apos = null, $arot 
 		},
 			"Nickname": "',$nickname,'",
 			"Description": "',$description,'",
-			"GMNotes": "",
+			"GMNotes": "',$uuid,'",
 			"ColorDiffuse": {
 			"r": 0.713235259,
 				"g": 0.713235259,
@@ -498,7 +564,7 @@ function printJSON($cardlist, $aback = null, $aface = null, $apos = null, $arot 
 		},
 			"Nickname": "',$nickname,'",
 			"Description": "',$description,'",
-			"GMNotes": "",
+			"GMNotes": "',$uuid,'",
 			"ColorDiffuse": {
 			"r": 0.713235259,
 				"g": 0.713235259,
@@ -543,7 +609,6 @@ function printJSON($cardlist, $aback = null, $aface = null, $apos = null, $arot 
 			} else {
 				$back = $aback;
 			}
-			$deckid = $deckid + 1;
 			echo '{
 			"Name": "Card",
 				"Transform": {
@@ -559,7 +624,7 @@ function printJSON($cardlist, $aback = null, $aface = null, $apos = null, $arot 
 		},
 		"Nickname": "',$nickname,'",
 		"Description": "',$description,'",
-		"GMNotes": "",
+		"GMNotes": "',$uuid,'",
 		"ColorDiffuse": {
 		"r": 0.713235259,
 			"g": 0.713235259,

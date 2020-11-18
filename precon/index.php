@@ -55,6 +55,8 @@ if(isset($gclean["scl"])){
 $alldecks = scandir("./json");
 
 $decks = null;
+$uuids = null;
+$deckname = null;
 
 if(isset($gclean["JMP"])){
 
@@ -66,67 +68,82 @@ if(isset($gclean["JMP"])){
 
 	shuffle($decks);
 
-
 	for($i = 0; $i < 2; $i++){
+
+		$deckname = $deckname.$decks[$i];
 
 		$json = json_decode(file_get_contents("./json/".$decks[$i]), true)["data"]["mainBoard"];
 
 		foreach($json as $card){
-			echo $card["count"]." [".$card["setCode"].":".$card["number"]."] ".$card["name"]."\n";
+			for($j = 0; $j < $card["count"]; $j++){	
+
+				$uuids[] = $card["uuid"];
+
+			}
 		}
-	
+
 	}
 
 }
 
 
-exit;
+if(isset($gclean["search"])){
+
+	$search = explode(" ", $gclean["search"]);
+
+	foreach($search as $find){
+		foreach($alldecks as $deck){
+			if(strpos(strtolower($deck), strtolower($find)) === False){
+
+			} else {
+				$decks[] = $deck;
+			}
+		}
+		$alldecks = $decks;
+		$decks = null;
+
+	}
+
+	$decks = $alldecks;
+
+
+	shuffle($decks);
+
+	$deckname = $decks[0];
+
+	$fulljson = json_decode(file_get_contents("./json/".$decks[0]), true)["data"];
+
+	$json = $fulljson["mainBoard"];
+
+	if(count($fulljson["commander"])>0){
+		$json[] = $fulljson["commander"][0];
+	}
+
+
+	foreach($json as $card){
+		for($j = 0; $j < $card["count"]; $j++){	
+
+			$uuids[] = $card["uuid"];
+
+		}
+	}
+
+
+}
 
 $pack = null;
 
-foreach($cardnames as $cardname){
+foreach($uuids as $uuid){
 
-	$cnd = null;
-
-	$cnd["name"] = $cardname["name"];
-	$card = getcard($cnd);
-	if (count($card) > 0){
-		$card["note"] = $cardname["note"];
-		$pack[] = $card;
-	}else{
-		//fuzzy if initial search fails
-		$cnd["fuzzy"]="yes";
-		$card = getcard($cnd);
-		//double fail gets nothing
-		if(count($card) > 0){
-			$card["note"] = $cardname["note"];
-			$pack[] = $card;
-		} else {
-			$card["note"] = "Fail to Find";
-		}
-	}
+	$card = fuzzyget($uuid, "id")[0];
+	$card["cutsheet"] = "Deck: ".$deckname;
+	$pack[] = $card;
 }
 
-foreach($cardsetnum as $setcn){
+if(count($pack) <= 0){
 
-	$cnd = null;
+	$pack = fuzzyget($gclean["search"], "No matching decks for search");
 
-	$cnd["set"] = $setcn["set"];
-	$cnd["cn"] = $setcn["cn"];
-	$card = getcard($cnd);
-	if (count($card) > 0){
-		$card["note"] = $setcn["note"];
-		$pack[] = $card;
-	}else{
-		//fuzzy if initial search fails
-		$cnd["fuzzy"]="yes";
-		$card = getcard($cnd);
-		//double fail gets nothing
-		if(count($card) > 0){
-			$card["note"] = $setcn["note"];
-			$pack[] = $card;
-		}
-	}
 }
 
 printJSON($pack, $gclean["back"], null, $ipos, $irot, $iscl, $gclean["note"]);

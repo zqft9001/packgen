@@ -1,3 +1,3 @@
 db_defs.php
 precon/json/*
-!precon/json/readme
+!precon/json/index.php
