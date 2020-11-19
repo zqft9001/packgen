@@ -149,7 +149,7 @@ $back = null;
 $note = null;
 
 if(isset($gclean["back"])){
-	$back = $clean["back"];
+	$back = $gclean["back"];
 }
 
 if(isset($gclean["note"])){
