@@ -429,6 +429,7 @@ function printJSON($cardlist, $aback = null, $aface = null, $apos = null, $arot 
 
 		$uuid = $card["uuid"];
 
+		$script = null;
 
 		if(isset($card["note"])){
 			//new notes change position of pile
@@ -466,12 +467,13 @@ function printJSON($cardlist, $aback = null, $aface = null, $apos = null, $arot 
 			}
 		}
 
-		if(strpos($description, "reate") or strpos($description, "emblem")){
-			$script = "self.addContextMenuItem('Get Token(s)', function() local porter = getObjectFromGUID('e5d411') porter.call('selftoken', {name=\\\"".addslashes($card["name"])."\\\", ref=self, owner=\\\"".$note."\\\"}) end)";
-		} else {
-			$script = null;
-		}
 
+		if(strpos($description, "reate") or strpos($description, "emblem")){
+			$script = $script."\nself.addContextMenuItem('Get Token(s)', function() local porter = getObjectFromGUID('e5d411') porter.call('selftoken', {name=\\\"".addslashes($card["name"])."\\\", ref=self, owner=\\\"".$note."\\\"}) end)";
+		}
+		
+		$script = $script."\nself.addContextMenuItem('Reveal/Hide', function() local porter = getObjectFromGUID('e5d411') porter.call('togglereveal', {ref=self}) end)";
+		
 		$description =  $description."\n".$card["setCode"].':'.$card["number"];
 
 		if(isset($card["reverseRelated"])){
