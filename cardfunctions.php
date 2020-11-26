@@ -472,8 +472,6 @@ function printJSON($cardlist, $aback = null, $aface = null, $apos = null, $arot 
 			$script = $script."\nself.addContextMenuItem('Get Token(s)', function() local porter = getObjectFromGUID('e5d411') porter.call('selftoken', {name=\\\"".addslashes($card["name"])."\\\", ref=self, owner=\\\"".$note."\\\"}) end)";
 		}
 		
-		$script = $script."\nself.addContextMenuItem('Reveal/Hide', function() local porter = getObjectFromGUID('e5d411') porter.call('togglereveal', {ref=self}) end)";
-		
 		$description =  $description."\n".$card["setCode"].':'.$card["number"];
 
 		if(isset($card["reverseRelated"])){
