@@ -37,7 +37,7 @@ function gettokens($cnd){
 		die("Connection failed: " . $conn->connect_error);
 	}
 
-	$sql = "select * from tokens where tokens.reverserelated like '%".$cnd["name"]."%' or tokens.name like '%".$cnd["name"]."%' and tokens.type <> 'Card' and tokens.side is null;";
+	$sql = "select * from tokens where tokens.reverserelated like '%".$cnd["name"]."%' or tokens.name like '%".$cnd["name"]."%' and tokens.side is null;";
 
 	if($cnd["sql"]=="yes"){
 		echo $sql;
@@ -468,7 +468,7 @@ function printJSON($cardlist, $aback = null, $aface = null, $apos = null, $arot 
 		}
 
 
-		if(strpos($description, "reate") or strpos($description, "emblem")){
+		if(strpos($description, "reate ") or strpos($description, "reates ") or strpos($description, "emblem") or strpos($description, "you become the monarch") or strpos($description, "you get the city")){
 			$script = $script."\nself.addContextMenuItem('Get Token(s)', function() local porter = getObjectFromGUID('e5d411') porter.call('selftoken', {name=\\\"".addslashes($card["name"])."\\\", ref=self, owner=\\\"".$note."\\\"}) end)";
 		}
 		
@@ -484,6 +484,7 @@ function printJSON($cardlist, $aback = null, $aface = null, $apos = null, $arot 
 
 		$description = addslashes($description);
 
+
 		if(isset($aface) and $aface != ""){
 			$face = $aface;
 		}elseif(isset($card["image"])){
@@ -491,6 +492,9 @@ function printJSON($cardlist, $aback = null, $aface = null, $apos = null, $arot 
 		} else {
 			$face = 'https://c1.scryfall.com/file/scryfall-cards/normal/front/'.substr($card["scryfallId"],0,1).'/'.substr($card["scryfallId"],1,1).'/'.$card["scryfallId"].'.jpg';
 		}
+
+		$gm = $card["name"].';'.$uuid.';'.$face;
+
 		if($card["otherFaceIds"] != null and $card["layout"] != "split" and $card["layout"] != "aftermath" and $card["layout"] != "flip"){
 			if($card["layout"] == "meld"){
 				$meldface = getother($card["otherFaceIds"])["scryfallId"];
@@ -513,7 +517,7 @@ function printJSON($cardlist, $aback = null, $aface = null, $apos = null, $arot 
 		},
 			"Nickname": "',$nickname,'",
 			"Description": "',$description,'",
-			"GMNotes": "',$uuid,'",
+			"GMNotes": "',$gm,'",
 			"ColorDiffuse": {
 			"r": 0.713235259,
 				"g": 0.713235259,
@@ -564,7 +568,7 @@ function printJSON($cardlist, $aback = null, $aface = null, $apos = null, $arot 
 		},
 			"Nickname": "',$nickname,'",
 			"Description": "',$description,'",
-			"GMNotes": "',$uuid,'",
+			"GMNotes": "',$gm,'",
 			"ColorDiffuse": {
 			"r": 0.713235259,
 				"g": 0.713235259,
@@ -624,7 +628,7 @@ function printJSON($cardlist, $aback = null, $aface = null, $apos = null, $arot 
 		},
 		"Nickname": "',$nickname,'",
 		"Description": "',$description,'",
-		"GMNotes": "',$uuid,'",
+		"GMNotes": "',$gm,'",
 		"ColorDiffuse": {
 		"r": 0.713235259,
 			"g": 0.713235259,

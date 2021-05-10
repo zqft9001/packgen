@@ -1,7 +1,7 @@
 <?php
 
-//defines database interactions
-include('../../db_defs.php');
+//consume
+include('../../consume.php');
 
 //defines pack rarities
 include('../../packgendefs.php');
@@ -12,21 +12,11 @@ include('../../cardfunctions.php');
 //makes the file output as plain text instead of html
 header('Content-type: text/plain');
 
-//setup connection
-$conn = new mysqli(SERVERNAME, USERNAME, PASSWORD, DBNAME);
-if ($conn->connect_error) {
-	die("Connection failed: " . $conn->connect_error);
-}
+//Deck search
 
-//escape all variables passed
-foreach ($_GET as $key => $value){
-	$gclean[$key]=$conn->escape_string($value);
-}
+if(isset($gclean["search"]) or isset($pclean["search"])){
 
-
-if(isset($gclean["search"])){
-
-	$search = $gclean["search"];
+	$search = strtolower($gclean["search"]);
 
 	if(!preg_match('/^[a-zA-Z0-9 ]+$/', $search)){
 		echo "illegal search string";
@@ -59,16 +49,39 @@ if(isset($gclean["search"])){
 	exit;
 }
 
-$name = $gclean["name"];
+//Deck upload
 
-$name = str_replace(" ", "_", $name);
+//set name
 
-if(!preg_match('/^[a-zA-Z0-9_]+$/', $name)){
-	echo "illegal deck name";
+$name = null;
+
+if(isset($gclean["name"])){
+	$name = $gclean["name"];
+}
+
+if(isset($pclean["deckname"])){
+	$name = $pclean["deckname"];
+}
+
+if(!isset($name)){
+	echo "specify a name for the deck";
 	exit;
 }
 
-if(isset($gclean["delete"])){
+$name = str_replace(" ", "_", $name);
+
+$name = strtolower($name);
+
+//check name for illegal chars
+
+if(!preg_match('/^[a-zA-Z0-9_]+$/', $name)){
+	echo "illegal deck name: ".$name;
+	exit;
+}
+
+//delete by name if flag set
+
+if(isset($gclean["delete"]) or isset($pclean["delete"])){
 	if(unlink(__DIR__."/".$name.".jason")){
 		echo "deleted ".$name;
 		exit;
@@ -78,12 +91,11 @@ if(isset($gclean["delete"])){
 	}
 }
 
-if(!isset($gclean["name"])){
-	echo "specify a name for the deck";
-	exit;
-}
+//start upload process
 
 $pack = null;
+
+//if upload by URL (random printing)
 
 if(isset($gclean["url"])){
 
@@ -180,11 +192,19 @@ if(isset($gclean["url"])){
 
 	}
 
-}elseif(isset($gclean["uuid"])){
-	foreach(explode(",", $gclean["uuid"]) as $item){
+//upload by uuid (specific printing, art kept
+
+}elseif(isset($pclean["cards"])){
+	foreach($pclean["cards"] as $item){
+
+		$items = explode(";", $item);
+
 		$card = null;
 
-		$card["uuid"] = $item;
+		$card["uuid"] = $items[1];
+		$card["name"] = $items[0];
+		$card["image"] = $items[2];
+
 		$card["count"] = 1;
 		$pack[] = $card;
 	}
@@ -193,6 +213,8 @@ if(isset($gclean["url"])){
 	echo "No deck information provided";
 	exit;
 }
+
+//Slam that into a JSON
 
 $json = ["data"=>["mainBoard"=>$pack]];
 

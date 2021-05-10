@@ -1,7 +1,7 @@
 <?php
 
-//defines database interactions
-include('../db_defs.php');
+//consume
+include('../consume.php');
 
 //defines pack rarities
 include('../packgendefs.php');
@@ -12,17 +12,6 @@ include('../cardfunctions.php');
 //makes the file output as plain text instead of html
 header('Content-type: text/plain');
 
-//setup connection
-$conn = new mysqli(SERVERNAME, USERNAME, PASSWORD, DBNAME);
-if ($conn->connect_error) {
-	die("Connection failed: " . $conn->connect_error);
-}
-
-
-//escape all variables passed
-foreach ($_GET as $key => $value){
-	$gclean[$key]=$conn->escape_string($value);
-}
 
 $ch = curl_init($gclean["url"]);
 curl_setopt($ch, CURLOPT_HEADER, 0);
@@ -35,34 +24,6 @@ curl_close($ch);
 if(preg_match("<!DOCTYPE html>", $out)){
 	echo "Invalid Format";
 	exit;
-}
-
-$ipos = null;
-$irot = null;
-$iscl = null;
-
-if(isset($gclean["pos"])){
-
-	$in = explode(",", $gclean["pos"]);
-
-	$ipos = [ "x" => $in[0], "y" => $in[1], "z" => $in[2] ];
-
-}
-
-if(isset($gclean["rot"])){
-
-	$in = explode(",", $gclean["rot"]);
-
-	$irot = [ "x" => $in[0], "y" => $in[1], "z" => $in[2] ];
-
-}
-
-if(isset($gclean["scl"])){
-
-	$in = explode(",", $gclean["scl"]);
-
-	$iscl = [ "x" => $in[0], "y" => $in[1], "z" => $in[2] ];
-
 }
 
 $cardnames = null;

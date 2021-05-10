@@ -1,7 +1,7 @@
 <?php
 
-//defines database interactions
-include('db_defs.php');
+//input consume and set up DB connection
+include('consume.php');
 
 //defines pack rarities
 include('packgendefs.php');
@@ -10,20 +10,9 @@ include('packgendefs.php');
 include('cardfunctions.php');
 
 
-//setup connection
-$conn = new mysqli(SERVERNAME, USERNAME, PASSWORD, DBNAME);
-if ($conn->connect_error) {
-	die("Connection failed: " . $conn->connect_error);
-}
-
-
 //makes the file output as plain text instead of html
 header('Content-type: text/plain');
 
-//escape all variables passed
-foreach ($_GET as $key => $value){
-	$gclean[$key]=$conn->escape_string($value);
-}
 
 /*
 ini_set('display_errors', 1);
@@ -220,7 +209,7 @@ foreach($layout["contents"] as $rarity=>$amount){
 $conn->close();
 
 if($JSON == "yes"){
-	printJSON($pack, $gclean["back"]);
+	printJSON($pack, $gclean["back"], null, $ipos, $irot, $iscl, null);
 } else {
 	foreach($pack as $card){
 		printnice($card, $options);

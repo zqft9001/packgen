@@ -1,7 +1,7 @@
 <?php
 
-//defines database interactions
-include('../db_defs.php');
+//consume and db
+include('../consume.php');
 
 //defines pack rarities
 include('../packgendefs.php');
@@ -12,51 +12,13 @@ include('../cardfunctions.php');
 //makes the file output as plain text instead of html
 header('Content-type: text/plain');
 
-//setup connection
-$conn = new mysqli(SERVERNAME, USERNAME, PASSWORD, DBNAME);
-if ($conn->connect_error) {
-	die("Connection failed: " . $conn->connect_error);
-}
-
-
-//escape all variables passed
-foreach ($_GET as $key => $value){
-	$gclean[$key]=$conn->escape_string($value);
-}
-
-$ipos = null;
-$irot = null;
-$iscl = null;
-
-if(isset($gclean["pos"])){
-
-	$in = explode(",", $gclean["pos"]);
-
-	$ipos = [ "x" => $in[0], "y" => $in[1], "z" => $in[2] ];
-
-}
-
-if(isset($gclean["rot"])){
-
-	$in = explode(",", $gclean["rot"]);
-
-	$irot = [ "x" => $in[0], "y" => $in[1], "z" => $in[2] ];
-
-}
-
-if(isset($gclean["scl"])){
-
-	$in = explode(",", $gclean["scl"]);
-
-	$iscl = [ "x" => $in[0], "y" => $in[1], "z" => $in[2] ];
-
-}
-
 $alldecks = scandir("./json");
 
 $decks = null;
 $uuids = null;
 $deckname = null;
+
+//Jumpstart override
 
 if(isset($gclean["JMP"])){
 
@@ -77,7 +39,7 @@ if(isset($gclean["JMP"])){
 		foreach($json as $card){
 			for($j = 0; $j < $card["count"]; $j++){	
 
-				$uuids[] = $card["uuid"];
+				$uuids[] = array( "id" => $card["uuid"]);
 
 			}
 		}
@@ -85,6 +47,8 @@ if(isset($gclean["JMP"])){
 	}
 
 }
+
+//Precon and user uploaded decks
 
 
 if(isset($gclean["search"])){
@@ -122,8 +86,11 @@ if(isset($gclean["search"])){
 
 	foreach($json as $card){
 		for($j = 0; $j < $card["count"]; $j++){	
-
-			$uuids[] = $card["uuid"];
+			if(isset($card["image"])){
+				$uuids[] = array("id" => $card["uuid"], "image" => $card["image"]);
+			} else {
+				$uuids[] = array("id" => $card["uuid"]);
+			}
 
 		}
 	}
@@ -131,12 +98,17 @@ if(isset($gclean["search"])){
 
 }
 
+//Spit out deck
+
 $pack = null;
 
 foreach($uuids as $uuid){
 
-	$card = fuzzyget($uuid, "id")[0];
+	$card = null;
+
+	$card = fuzzyget($uuid["id"], "id")[0];
 	$card["cutsheet"] = "Deck: ".$deckname;
+	if(isset($uuid["image"])){$card["image"] = $uuid["image"];}
 	$pack[] = $card;
 }
 

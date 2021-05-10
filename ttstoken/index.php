@@ -1,7 +1,7 @@
 <?php
 
-//defines database interactions
-include('../db_defs.php');
+//consume and db
+include('../consume.php');
 
 //defines pack rarities
 include('../packgendefs.php');
@@ -18,42 +18,6 @@ ini_set('display_startup_errors', 1);
 error_reporting(E_ALL);
  */
 
-$conn = new mysqli(SERVERNAME, USERNAME, PASSWORD, DBNAME);
-if ($conn->connect_error) {
-	die("Connection failed: " . $conn->connect_error);
-}
-
-foreach($_GET as $key=>$value){
-	$gclean[$key] = $conn->escape_string($value);
-}
-
-$ipos = null;
-$irot = null;
-$iscl = null;
-
-if(isset($gclean["pos"])){
-
-	$in = explode(",", $gclean["pos"]);
-
-	$ipos = [ "x" => $in[0], "y" => $in[1], "z" => $in[2] ];
-
-}
-
-if(isset($gclean["rot"])){
-
-	$in = explode(",", $gclean["rot"]);
-
-	$irot = [ "x" => $in[0], "y" => $in[1], "z" => $in[2] ];
-
-}
-
-if(isset($gclean["scl"])){
-
-	$in = explode(",", $gclean["scl"]);
-
-	$iscl = [ "x" => $in[0], "y" => $in[1], "z" => $in[2] ];
-
-}
 
 $pack = gettokens($gclean);
 
