@@ -80,16 +80,23 @@ if(isset($gclean["search"])){
 	$json = $fulljson["mainBoard"];
 
 	if(count($fulljson["commander"])>0){
-		$json[] = $fulljson["commander"][0];
+		foreach($fulljson["commander"] as $cm){
+			$json[] = $cm + array("note" => "CMDR");
+		}
 	}
 
+	if(count($fulljson["sideBoard"])>0){
+		foreach($fulljson["sideBoard"] as $sb){
+			$json[] = $sb + array("note" => "Sideboard");
+		}
+	}
 
 	foreach($json as $card){
 		for($j = 0; $j < $card["count"]; $j++){	
 			if(isset($card["image"])){
 				$uuids[] = array("id" => $card["uuid"], "image" => $card["image"]);
 			} else {
-				$uuids[] = array("id" => $card["uuid"]);
+				$uuids[] = array("id" => $card["uuid"], "note" => $card["note"]);
 			}
 
 		}
@@ -109,6 +116,7 @@ foreach($uuids as $uuid){
 	$card = fuzzyget($uuid["id"], "id")[0];
 	$card["cutsheet"] = "Deck: ".$deckname;
 	if(isset($uuid["image"])){$card["image"] = $uuid["image"];}
+	if(isset($uuid["note"])){$card["note"] = $uuid["note"];}
 	$pack[] = $card;
 }
 

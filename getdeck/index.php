@@ -40,8 +40,12 @@ foreach($lines[1] as $line){
 	$numname = null;
 
 	$setcn = null;
+
 	
-	if($line != "" and preg_match("/([0-9]+)\s([^[].*)/", $line, $numname) == 1){
+	if($line != "" and preg_match("/[Ss]ideboard.*/", $line, $numname) == 1){
+		$section = "Sideboard";
+
+	} elseif($line != "" and preg_match("/([0-9]+)\s([^[].*)/", $line, $numname) == 1){
 
 		for($i = 0; $i < $numname[1]; $i++){
 
@@ -85,7 +89,7 @@ foreach($cardnames as $cardname){
 
 	$cnd["name"] = $cardname["name"];
 	$card = fuzzyget($cnd)[0];
-	$card["note"] = $setcn["note"];
+	$card["note"] = $cardname["note"];
 	$pack[] = $card;
 }
 
