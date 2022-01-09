@@ -4,6 +4,7 @@ $FailtoFind = [
 	"name" => "Fail to Find",
 	"type" => "Error Message",
 	"convertedManaCost" => 404,
+	"manaValue" => 404,
 	"text" => "Failed to find\n",
 	"image" => "https://i.imgur.com/jOI0aAE.png",
 	"setCode" => "errors",
@@ -366,6 +367,7 @@ function printnice($card, $options){
 		if($fcount % 5 == 0){
 			echo "<br>";
 		}
+
 		return true;
 	}
 	return false;
@@ -439,7 +441,7 @@ function printJSON($cardlist, $aback = null, $aface = null, $apos = null, $arot 
 			$note = $card["note"]." ".$anote;
 		}
 
-		$nickname = addslashes($card["name"]).' | '.$card["type"].' | CMC'.$card["convertedManaCost"].' | '.$note;
+		$nickname = addslashes($card["name"]).' | '.$card["type"].' | MV '.$card["manaValue"].' | '.$note;
 
 		if(isset($card["text"])){
 			$description = $description.$card["text"]."\n";
