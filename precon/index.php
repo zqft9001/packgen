@@ -126,6 +126,6 @@ if(count($pack) <= 0){
 
 }
 
-printJSON($pack, $gclean["back"], null, $ipos, $irot, $iscl, $gclean["note"]);
+printJSON($pack, $gclean["back"], null, $ipos, $irot, $iscl, $gclean["note"], $gclean["GUID"]);
 
 ?>

@@ -209,7 +209,7 @@ foreach($layout["contents"] as $rarity=>$amount){
 $conn->close();
 
 if($JSON == "yes"){
-	printJSON($pack, $gclean["back"], null, $ipos, $irot, $iscl, null);
+	printJSON($pack, $gclean["back"], null, $ipos, $irot, $iscl, null, $gclean["GUID"]);
 } else {
 	foreach($pack as $card){
 		printnice($card, $options);

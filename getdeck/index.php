@@ -121,6 +121,6 @@ if(isset($gclean["note"])){
 	$note = $gclean["note"];
 }
 
-printJSON($pack, $back, null, $ipos, $irot, $iscl, $note);
+printJSON($pack, $back, null, $ipos, $irot, $iscl, $note, $gclean["GUID"]);
 
 ?>

@@ -385,7 +385,7 @@ function printcards($cardlist){
 }
 
 
-function printJSON($cardlist, $aback = null, $aface = null, $apos = null, $arot = null, $ascl = null, $anote = null){
+function printJSON($cardlist, $aback = null, $aface = null, $apos = null, $arot = null, $ascl = null, $anote = null, $GUID = null){
 
 	include('JSONdefs.php');
 
@@ -471,7 +471,7 @@ function printJSON($cardlist, $aback = null, $aface = null, $apos = null, $arot 
 
 
 		if(strpos($description, "reate ") or strpos($description, "reates ") or strpos($description, "emblem") or strpos($description, "you become the monarch") or strpos($description, "you get the city")){
-			$script = $script."\nself.addContextMenuItem('Get Token(s)', function() local porter = getObjectFromGUID('e5d411') porter.call('selftoken', {name=\\\"".addslashes($card["name"])."\\\", ref=self, owner=\\\"".$note."\\\"}) end)";
+			$script = $script."\nself.addContextMenuItem('Get Token(s)', function() local porter = getObjectFromGUID('".$GUID."') porter.call('selftoken', {name=\\\"".addslashes($card["name"])."\\\", ref=self, owner=\\\"".$note."\\\"}) end)";
 		}
 		
 		$description =  $description."\n".$card["setCode"].':'.$card["number"];

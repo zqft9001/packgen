@@ -62,6 +62,6 @@ if(isset($gclean["packcheck"])){
 	print_r($pack);
 }
 
-printJSON($pack,$gclean["back"],$gclean["face"], $ipos, $irot, $iscl, $gclean["note"]);
+printJSON($pack,$gclean["back"],$gclean["face"], $ipos, $irot, $iscl, $gclean["note"], $gclean["GUID"]);
 
 ?>

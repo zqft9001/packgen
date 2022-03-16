@@ -25,6 +25,6 @@ if(count($pack) <= 0){
 	exit;
 }
 
-printJSON($pack,$gclean["back"],$gclean["face"],$ipos, $irot, $iscl, $gclean["note"]);
+printJSON($pack,$gclean["back"],$gclean["face"],$ipos, $irot, $iscl, $gclean["note"], $gclean["GUID"]);
 
 ?>

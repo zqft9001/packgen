@@ -392,7 +392,7 @@ function parseMessage(msg, position, rotation, owner)
 
 		--Bake args
 
-		local exargs = back(owner)..setpos(position)..setrot(rotation)..cardscale(owner)..note(owner)
+		local exargs = back(owner)..setpos(position)..setrot(rotation)..cardscale(owner)..note(owner).."&GUID="..self.guid
 
 		--help commands
 
