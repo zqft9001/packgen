@@ -95,7 +95,7 @@ backurl = {}
 globalback = ""
 
 function back(owner)
-	if globalback ~= "" then
+	if globalback ~= nil then
 		return "&back="..globalback
 	elseif backurl[owner] ~= nil then
 		return "&back="..backurl[owner]
@@ -318,6 +318,17 @@ function preconinfo(text)
 	printToAll(text)
 end
 
+--checks if a back URL is valid, returns nil if it isn't
+
+function backcheck(imageurl)
+	if imageurl:match('.jpg') or imageurl:match('.png') or imageurl:match('.webm') or imageurl:match('.mp4') or imageurl:match('.m4v') or imageurl:match('.mov') or imageurl:match('.rawt') or imageurl:match('.unity3d') then
+		return imageurl
+	else
+		return nil
+	end
+end
+
+
 
 --Tabletop Functions
 
@@ -507,12 +518,17 @@ function parseMessage(msg, position, rotation, owner)
 
 		elseif string.match(request, "^GLOBALBACK") and url then
 
-			globalback = url
-			Wait.time(function()printToAll("Set global back to "..globalback)end, 0.5)
+			globalback = backcheck(url)
+			if globalback == nil then
+				Wait.time(function()printToAll("Invalid back image provided.")end, 0.5)
+			else
+				local setbackstr = "Set global back to "..globalback
+				Wait.time(function()printToAll(setbackstr)end, 0.5)
+			end
 
 		elseif string.match(request, "^GLOBALBACK") then
 
-			globalback = ""
+			globalback = nil
 			Wait.time(function()printToAll("Cleared global back")end, 0.5)
 
 		elseif string.match(request, "^GLOBALSCALE") and scale then
@@ -537,9 +553,13 @@ function parseMessage(msg, position, rotation, owner)
 			Wait.time(function()printToAll("Cleared player scale")end, 0.5)
 
 		elseif string.match(request, "^[Bb]ack") and url then
-			backurl[owner] = url
-			local setbackstr = "Set "..owner.."'s back to "..backurl[owner]
-			Wait.time(function()printToAll(setbackstr)end, 0.5)
+			backurl[owner] = backcheck(url)
+			if backurl[owner] == nil then
+				Wait.time(function()printToAll("Invalid back image provided.")end, 0.5)
+			else
+				local setbackstr = "Set "..owner.."'s back to "..backurl[owner]
+				Wait.time(function()printToAll(setbackstr)end, 0.5)
+			end
 
 		elseif string.match(request, "^[Bb]ack") then
 			backurl[owner] = nil
