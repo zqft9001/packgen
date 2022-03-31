@@ -92,7 +92,7 @@ end
 
 --returns cardback if set, empty string otherwise
 backurl = {}
-globalback = ""
+globalback = nil
 
 function back(owner)
 	if globalback ~= nil then
