@@ -150,21 +150,21 @@ function setscl(scl)
 end
 
 --Gets single card information by name. Random printToAlling.
-function getcard(args, position, rotation)
+function getcard(args)
 	Wait.time(function()printToAll("Spawning object(s), please wait.")end, 0.5)
 	local url = site..tp()..'ttscard/?'..args
 	log(url)
-	WebRequest.get(url, function(a) spawncard(a, position, rotation) end)
+	WebRequest.get(url, function(a) spawncard(a.text) end)
 end
 
 --Spawns a card from JSON
-function spawncard(webReturn, position, rotation)
-	if (webReturn.text == "") or (webReturn.text == nil) then
+function spawncard(text)
+	if (text == "") or (text == nil) then
 		Wait.time(function()printToAll("unable to spawn object(s), no return from site")end, 0.5)
 		return
 	end
-	for i in string.gmatch(webReturn.text, "([^@]+)") do
-		spawnObjectJSON({json=i, position=position, rotation=rotation})
+	for i in string.gmatch(text, "([^@]+)") do
+		spawnObjectJSON({json=i})
 	end
 
 end
@@ -184,14 +184,13 @@ function selftoken(table)
 	elseif trot.y >= 325 or trot.y < 55 then
 		tpos.z= tpos.z - 3.18
 	end
-	gettoken("name="..table.name..back(table.owner)..cardscale(table.owner)..setpos({x=tpos.x, y=tpos.y, z=tpos.z})..setrot({x=trot.x, y=trot.y, z=0}))
+	parseMessage("s token "..table.name, {x=tpos.x, y=tpos.y, z=tpos.z}, {x=trot.x, y=trot.y, z=0}, table.owner)
 end
 
-function gettoken(args)
+function gettoken(url)
 	Wait.time(function()printToAll("Spawning object(s), please wait.")end, 0.5)
-	local url = site..tp()..'ttstoken/?'..args
 	log(url)
-	WebRequest.get(url, function(a) spawncard(a) end)
+	WebRequest.get(url, function(a) spawncard(a.text) end)
 end
 
 --Gets a pack by URL.
@@ -321,8 +320,10 @@ end
 --checks if a back URL is valid, returns nil if it isn't
 
 function backcheck(imageurl)
+	local returnurl = imageurl
+	imageurl = imageurl:lower()
 	if imageurl:match('.jpg') or imageurl:match('.png') or imageurl:match('.webm') or imageurl:match('.mp4') or imageurl:match('.m4v') or imageurl:match('.mov') or imageurl:match('.rawt') or imageurl:match('.unity3d') then
-		return imageurl
+		return returnurl
 	else
 		return nil
 	end
@@ -436,6 +437,8 @@ function parseMessage(msg, position, rotation, owner)
 				"s scale",
 				"s back https://i.imgur.com/hg32UEH.mp4",
 				"s mh2",
+				"s card teysa, envoy of",
+				"s card teysa, orzhov scion",
 				"s back",
 				"s pack",
 				"s card giant growth",
@@ -487,9 +490,9 @@ function parseMessage(msg, position, rotation, owner)
 
 		elseif string.match(request, "^[Tt]oken") and token then
 			if not url then
-				gettoken("name="..token..exargs)
+				gettoken(site..tp().."ttstoken/?name="..token..exargs)
 			elseif string.match(token, "http%S+ (.*)") then
-				gettoken("name="..token:match("http%S+ (.*)").."&face="..url..exargs)
+				gettoken(site..tp().."ttstoken/?name="..token:match("http%S+ (.*)").."&face="..url..exargs)
 			end
 
 			--Card commands

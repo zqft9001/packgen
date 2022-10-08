@@ -341,7 +341,7 @@ function printnice($card, $options){
 		echo '<a href="https://scryfall.com/card/'.strtolower($card["setCode"]).'/'.$card["number"].'">';
 
 		if($options["images"] == "yes"){
-			echo "<img src=\"https://c1.scryfall.com/file/scryfall-cards/normal/front/".substr($card["scryfallId"],0,1).'/'.substr($card["scryfallId"],1,1).'/'.$card["scryfallId"].'.jpg"  style=\'height:33%;\'>';
+			echo "<img src=\"https://cards.scryfall.io/normal/front/".substr($card["scryfallId"],0,1).'/'.substr($card["scryfallId"],1,1).'/'.$card["scryfallId"].'.jpg"  style=\'height:33%;\'>';
 			if($fcount % 8 == 0){
 				echo "\n";
 			}
@@ -362,7 +362,7 @@ function printnice($card, $options){
 
 	if($options["images"] == "yes"){
 		echo '<a href="https://scryfall.com/card/'.strtolower($card["setCode"]).'/'.$card["number"].'">';
-		echo "<img src=\"https://c1.scryfall.com/file/scryfall-cards/normal/front/".substr($card["scryfallId"],0,1).'/'.substr($card["scryfallId"],1,1).'/'.$card["scryfallId"].'.jpg"  style=\'height:33%;\'>';
+		echo "<img src=\"https://cards.scryfall.io/normal/front/".substr($card["scryfallId"],0,1).'/'.substr($card["scryfallId"],1,1).'/'.$card["scryfallId"].'.jpg"  style=\'height:33%;\'>';
 		echo '</a>';
 		if($fcount % 5 == 0){
 			echo "<br>";
@@ -492,7 +492,7 @@ function printJSON($cardlist, $aback = null, $aface = null, $apos = null, $arot 
 		}elseif(isset($card["image"])){
 			$face = $card["image"];
 		} else {
-			$face = 'https://c1.scryfall.com/file/scryfall-cards/normal/front/'.substr($card["scryfallId"],0,1).'/'.substr($card["scryfallId"],1,1).'/'.$card["scryfallId"].'.jpg';
+			$face = 'https://cards.scryfall.io/normal/front/'.substr($card["scryfallId"],0,1).'/'.substr($card["scryfallId"],1,1).'/'.$card["scryfallId"].'.jpg';
 		}
 
 		$gm = $card["name"].';'.$uuid.';'.$face;
@@ -500,9 +500,9 @@ function printJSON($cardlist, $aback = null, $aface = null, $apos = null, $arot 
 		if($card["otherFaceIds"] != null and $card["layout"] != "split" and $card["layout"] != "aftermath" and $card["layout"] != "flip"){
 			if($card["layout"] == "meld"){
 				$meldface = getother($card["otherFaceIds"])["scryfallId"];
-				$dfcback = 'https://c1.scryfall.com/file/scryfall-cards/normal/front/'.substr($meldface,0,1).'/'.substr($meldface,1,1).'/'.$meldface.'.jpg';
+				$dfcback = 'https://cards.scryfall.io/normal/front/'.substr($meldface,0,1).'/'.substr($meldface,1,1).'/'.$meldface.'.jpg';
 			} else {
-				$dfcback = 'https://c1.scryfall.com/file/scryfall-cards/normal/back/'.substr($card["scryfallId"],0,1).'/'.substr($card["scryfallId"],1,1).'/'.$card["scryfallId"].'.jpg';
+				$dfcback = 'https://cards.scryfall.io/normal/back/'.substr($card["scryfallId"],0,1).'/'.substr($card["scryfallId"],1,1).'/'.$card["scryfallId"].'.jpg';
 			}
 			echo '{
 			"Name": "Card",
