@@ -71,7 +71,7 @@ $custom = strtolower($gclean["custom"]);
 $pack = array();
 
 //get set info
-$sql = "SELECT * FROM sets where sets.keyruneCode like '%".$set."%' and sets.booster is not null order by rand() limit 1;";
+$sql = "SELECT * FROM sets where sets.code like '%".$set."%' and sets.booster is not null order by rand() limit 1;";
 
 $result = $conn->query($sql);
 
@@ -84,12 +84,13 @@ if ($result->num_rows < 1){
 while ($row = $result->fetch_assoc()){
 
 	If($row["booster"] != NULL){
-		$cleanedjson = str_replace("True", "1", str_replace("False", "0", (str_replace("'", '"', $row["booster"]))));
+		$cleanedjson = str_replace("True", "1", str_replace("False", "0", (str_replace("'", '"', preg_replace('/[A-Za-z](\') /', '` ', $row["booster"])))));
 		$sinfo = json_decode($cleanedjson, true);
 		$set = $row["keyruneCode"];
 		$setfriendly = $row["name"];
 	}
 }
+
 
 //help+print options. switches to HTML output if enabled.
 
@@ -110,11 +111,8 @@ if($images == "yes"){
 
 $options["customrarity"] = null;
 
-
 //unclear why "default" is a wrapper for these, remove it
 $sinfo = $sinfo["default"];
-
-
 
 //what pack layout are we getting?
 
