@@ -229,7 +229,7 @@ function getcard($cnd){
 		$sql = $sql.$filterstart.$fbuild.$filterend;
 	}
 
-	$bannedsets = "and isOnlineOnly = 0 and borderColor <> 'gold' and cards.setCode not in ('4BB', 'FBB', 'PHJ', 'PJJT', 'PMPS', 'PSAL', 'PMPS06', 'PMPS07', 'PMPS08', 'PMPS09', 'PMPS10', 'PMPS11', 'PRED', 'PS11', 'REN', 'RIN') ";
+	$bannedsets = "and isOnlineOnly is NULL and borderColor <> 'gold' and cards.setCode not in ('4BB', 'FBB', 'PHJ', 'PJJT', 'PMPS', 'PSAL', 'PMPS06', 'PMPS07', 'PMPS08', 'PMPS09', 'PMPS10', 'PMPS11', 'PRED', 'PS11', 'REN', 'RIN') ";
 
 	if(isset($cnd["name"])){
 
@@ -285,6 +285,40 @@ function getcard($cnd){
 
 
 }
+
+function getimagebyuuid($uuid, $special = ""){
+
+	$conn = new mysqli(SERVERNAME, USERNAME, PASSWORD, DBNAME);
+	if ($conn->connect_error) {
+		die("Connection failed: " . $conn->connect_error);
+	}
+	
+	if ($special == "token"){
+
+	$sql = "select * from tokenIdentifiers where tokenIdentifiers.uuid like \"".$uuid."\";";
+
+	}else{
+
+	$sql = "select * from cardIdentifiers where cardIdentifiers.uuid like \"".$uuid."\";";
+
+	}
+
+	$result = $conn->query($sql);
+
+	if ($result->num_rows < 1){
+		return "https://i.imgur.com/jOI0aAE.png";
+	}
+
+	$card = $result->fetch_array();
+
+
+	$conn->close();
+	if ($special == "back"){
+		return 'https://cards.scryfall.io/normal/back/'.substr($card["scryfallId"],0,1).'/'.substr($card["scryfallId"],1,1).'/'.$card["scryfallId"].'.jpg';
+	}
+	return 'https://cards.scryfall.io/normal/front/'.substr($card["scryfallId"],0,1).'/'.substr($card["scryfallId"],1,1).'/'.$card["scryfallId"].'.jpg';
+}
+
 
 //Generates a rarity based on the length of the string passed.
 //curm - common uncommon rare mythic
@@ -492,17 +526,21 @@ function printJSON($cardlist, $aback = null, $aface = null, $apos = null, $arot 
 		}elseif(isset($card["image"])){
 			$face = $card["image"];
 		} else {
-			$face = 'https://cards.scryfall.io/normal/front/'.substr($card["scryfallId"],0,1).'/'.substr($card["scryfallId"],1,1).'/'.$card["scryfallId"].'.jpg';
+			if($card["layout"] == token){
+				$face = getimagebyuuid($card["uuid"], "token");
+			}else{
+				$face = getimagebyuuid($card["uuid"]);
+			}
 		}
 
 		$gm = $card["name"].';'.$uuid.';'.$face;
 
 		if($card["otherFaceIds"] != null and $card["layout"] != "split" and $card["layout"] != "aftermath" and $card["layout"] != "flip"){
 			if($card["layout"] == "meld"){
-				$meldface = getother($card["otherFaceIds"])["scryfallId"];
-				$dfcback = 'https://cards.scryfall.io/normal/front/'.substr($meldface,0,1).'/'.substr($meldface,1,1).'/'.$meldface.'.jpg';
+				$meldface = getother($card["otherFaceIds"])["uuid"];
+				$dfcback = getimagebyuuid($meldface);
 			} else {
-				$dfcback = 'https://cards.scryfall.io/normal/back/'.substr($card["scryfallId"],0,1).'/'.substr($card["scryfallId"],1,1).'/'.$card["scryfallId"].'.jpg';
+				$dfcback = getimagebyuuid($card["uuid"], "back");
 			}
 			echo '{
 			"Name": "Card",
