@@ -20,17 +20,33 @@ ini_set('display_startup_errors', 1);
 error_reporting(E_ALL);
  */
 
-$debug = $gclean["debug"];
+if(array_key_exists("debug", $gclean)){
+	$debug = $gclean["debug"];
+} else {
+	$debug = "no";
+}
 //debug help if "yes" (prints SQL, mostly)
 
-$help = $gclean["help"];
+if(array_key_exists("help", $gclean)){
+	$help = $gclean["help"];
+} else {
+	$help = "no";
+}
 //gets pack information if "yes" or "only"
 
-$set = $gclean["set"];
+if(array_key_exists("set", $gclean)){
+	$set = $gclean["set"];
+} else {
+	$set = "";
+}
 //Keyrune of set
 //Grabs a random pack by default
 
-$ptype = $gclean["ptype"];
+if(array_key_exists("ptype", $gclean)){
+	$ptype = $gclean["ptype"];
+} else {
+	$ptype = "";
+}
 //type of pack.
 // ori - original rarity (default)
 // r - oops all rares
@@ -40,14 +56,25 @@ $ptype = $gclean["ptype"];
 // u - all uncommons
 // m - all mythics
 
-$lands = $gclean["lands"];
+if(array_key_exists("lands", $gclean)){
+	$lands = $gclean["lands"];
+} else {
+	$lands = "";
+}
 //attempt lands in pack
 
-$dupesflag = $gclean["dupes"];
+if(array_key_exists("dupes", $gclean)){
+	$dupesflag = $gclean["dupes"];
+} else {
+	$dupesflag = "";
+}
 //sets packs to allow or disallow duplicated. defaults to no duplicate cards.
 
-
-$marketing = $gclean["marketing"];
+if(array_key_exists("marketing", $gclean)){
+	$marketing = $gclean["marketing"];
+} else {
+	$marketing = "";
+}
 //puts in phone cards in the marketing slots.
 
 if($dupesflag == "yes"){
@@ -56,13 +83,25 @@ if($dupesflag == "yes"){
 	$nodupe = True;
 }
 
-$images = $gclean["images"];
+if(array_key_exists("images", $gclean)){
+	$images = $gclean["images"];
+} else {
+	$images = "";
+}
 //Printnice will have images if "yes".
 
-$JSON = $gclean["JSON"];
+if(array_key_exists("JSON", $gclean)){
+	$JSON = $gclean["JSON"];
+} else {
+	$JSON = "";
+}
 //will spit out TTS JSON for the pack instead of normal formatting
 
-$custom = strtolower($gclean["custom"]);
+if(array_key_exists("custom", $gclean)){
+	$custom = strtolower($gclean["custom"]);
+} else {
+	$custom = "";
+}
 //wacky packs
 //kami - all legendary cards, rarity ignored, set ignored, 15 card pack.
 //color - grabs only cards of a specific color (from set if specified)
@@ -76,10 +115,15 @@ $sql = "SELECT * FROM sets where sets.code like '%".$set."%' and sets.booster is
 $result = $conn->query($sql);
 
 //it's not me, it's the query that is wrong
-if ($result->num_rows < 1){
-	$rarity = $currarity;
+if (is_object($result)){
+	if ($result->num_rows < 1){
+		$rarity = $currarity;
+	}
+} else {
+	//yeah there's nothing to work on there bud, no object
+	$conn->close();
+	exit;
 }
-
 //Get booster distribution and keyrunecode
 while ($row = $result->fetch_assoc()){
 

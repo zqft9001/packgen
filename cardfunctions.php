@@ -77,12 +77,15 @@ function getother($otherface){
 
 	$result = $conn->query($sql);
 
-	if ($result->num_rows < 1){
+	if (is_object($result)){
+		if ($result->num_rows < 1){
+			return "Fail to Find";
+		}
+
+		$card = $result->fetch_array();
+	} else {
 		return "Fail to Find";
 	}
-
-	$card = $result->fetch_array();
-
 	$conn->close();
 	return $card;
 
@@ -224,7 +227,7 @@ function getcard($cnd){
 		$fbuild = $fbuild."and cards.type like '%".$cnd["type"]."%' ";
 	}
  */
-	if (count($fbuild)>0){
+	if (strlen($fbuild)>0){
 		$fbuild = substr($fbuild, 4);
 		$sql = $sql.$filterstart.$fbuild.$filterend;
 	}
@@ -292,14 +295,14 @@ function getimagebyuuid($uuid, $special = ""){
 	if ($conn->connect_error) {
 		die("Connection failed: " . $conn->connect_error);
 	}
-	
+
 	if ($special == "token"){
 
-	$sql = "select * from tokenIdentifiers where tokenIdentifiers.uuid like \"".$uuid."\";";
+		$sql = "select * from tokenIdentifiers where tokenIdentifiers.uuid like \"".$uuid."\";";
 
 	}else{
 
-	$sql = "select * from cardIdentifiers where cardIdentifiers.uuid like \"".$uuid."\";";
+		$sql = "select * from cardIdentifiers where cardIdentifiers.uuid like \"".$uuid."\";";
 
 	}
 
@@ -467,6 +470,10 @@ function printJSON($cardlist, $aback = null, $aface = null, $apos = null, $arot 
 
 		$script = null;
 
+		if(!array_key_exists("manaValue", $card)){
+			$card["manaValue"] = "0";
+		}
+
 		if(isset($card["note"])){
 			//new notes change position of pile
 			if($note != $card["note"]." ".$anote){
@@ -507,7 +514,7 @@ function printJSON($cardlist, $aback = null, $aface = null, $apos = null, $arot 
 		if(strpos($description, "reate ") or strpos($description, "reates ") or strpos($description, "emblem") or strpos($description, "you become the monarch") or strpos($description, "you get the city")){
 			$script = $script."\nself.addContextMenuItem('Get Token(s)', function() local porter = getObjectFromGUID('".$GUID."') porter.call('selftoken', {name=\\\"".addslashes($card["name"])."\\\", ref=self, owner=\\\"".$note."\\\"}) end)";
 		}
-		
+
 		$description =  $description."\n".$card["setCode"].':'.$card["number"];
 
 		if(isset($card["reverseRelated"])){
@@ -526,7 +533,7 @@ function printJSON($cardlist, $aback = null, $aface = null, $apos = null, $arot 
 		}elseif(isset($card["image"])){
 			$face = $card["image"];
 		} else {
-			if($card["layout"] == token){
+			if($card["layout"] == "token"){
 				$face = getimagebyuuid($card["uuid"], "token");
 			}else{
 				$face = getimagebyuuid($card["uuid"]);
@@ -666,43 +673,43 @@ function printJSON($cardlist, $aback = null, $aface = null, $apos = null, $arot 
 					"scaleY": ',$scl["y"],',
 					"scaleZ": ',$scl["z"],'
 		},
-		"Nickname": "',$nickname,'",
-		"Description": "',$description,'",
-		"GMNotes": "',$gm,'",
-		"ColorDiffuse": {
-		"r": 0.713235259,
-			"g": 0.713235259,
-			"b": 0.713235259
+			"Nickname": "',$nickname,'",
+			"Description": "',$description,'",
+			"GMNotes": "',$gm,'",
+			"ColorDiffuse": {
+			"r": 0.713235259,
+				"g": 0.713235259,
+				"b": 0.713235259
 		},
-		"Locked": false,
-		"Grid": true,
-		"Snap": true,
-		"IgnoreFoW": false,
-		"MeasureMovement": false,
-		"DragSelectable": true,
-		"Autoraise": true,
-		"Sticky": true,
-		"Tooltip": true,
-		"GridProjection": false,
-		"HideWhenFaceDown": true,
-		"Hands": true,
-		"CardID": 100,
-		"SidewaysCard": false,
-		"CustomDeck": {
-		"1": {
-		"FaceURL": "',$face,'",
-			"BackURL": "',$back,'",
-			"NumWidth": 1,
-			"NumHeight": 1,
-			"BackIsHidden": true,
-			"UniqueBack": false,
-			"Type": 0
+			"Locked": false,
+			"Grid": true,
+			"Snap": true,
+			"IgnoreFoW": false,
+			"MeasureMovement": false,
+			"DragSelectable": true,
+			"Autoraise": true,
+			"Sticky": true,
+			"Tooltip": true,
+			"GridProjection": false,
+			"HideWhenFaceDown": true,
+			"Hands": true,
+			"CardID": 100,
+			"SidewaysCard": false,
+			"CustomDeck": {
+			"1": {
+			"FaceURL": "',$face,'",
+				"BackURL": "',$back,'",
+				"NumWidth": 1,
+				"NumHeight": 1,
+				"BackIsHidden": true,
+				"UniqueBack": false,
+				"Type": 0
 		}
 		},
-		"LuaScript": "',$script,'",
-		"LuaScriptState": "",
-		"XmlUI": "",
-		"GUID": "947dc9"
+			"LuaScript": "',$script,'",
+			"LuaScriptState": "",
+			"XmlUI": "",
+			"GUID": "947dc9"
 		}@';
 		}
 	}
