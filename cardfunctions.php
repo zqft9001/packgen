@@ -146,7 +146,7 @@ function getcard($cnd){
 	$trycount = $trycount + 1;
 
 	if($trycount > 1000){
-		return;
+		return array();
 	}
 
 	//gets a card from a set based on the conditions provided
@@ -259,7 +259,7 @@ function getcard($cnd){
 	$result = $conn->query($sql);
 
 	if ($result->num_rows < 1){
-		return;
+		return array();
 	}
 
 	if(isset($cnd["allprints"])){
