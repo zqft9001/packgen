@@ -18,12 +18,14 @@ $decks = null;
 $uuids = null;
 $deckname = null;
 
-//Jumpstart override
+//Jumpstart Deck Handler
 
-if(isset($gclean["JMP"])){
+function jumpstartdeck($jumpstart){
 
+	global $alldecks, $decks, $uuids, $deckname;	
+	
 	foreach($alldecks as $deck){
-		if(preg_match("/.*JMP.*/", $deck)){
+		if(preg_match("/.*".$jumpstart.".*/", $deck)){
 			$decks[] = $deck;
 		}
 	}
@@ -45,7 +47,23 @@ if(isset($gclean["JMP"])){
 		}
 
 	}
+}
+//Jumpstart overrides
 
+if(isset($gclean["JMP"])){
+	jumpstartdeck("JMP");
+}
+
+if(isset($gclean["TLE"])){
+	jumpstartdeck("TLE");
+}
+
+if(isset($gclean["J22"])){
+	jumpstartdeck("J22");
+}
+
+if(isset($gclean["J25"])){
+	jumpstartdeck("J25");
 }
 
 //Precon and user uploaded decks

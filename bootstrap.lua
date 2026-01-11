@@ -578,9 +578,25 @@ function parseMessage(msg, position, rotation, owner)
 
 			getpack(site..tp().."?JSON=yes"..exargs)
 
+			--original jumpstart
 		elseif string.match(request, "^[Jj][Mm][Pp]") then
 
 			getpack(site..tp().."/precon/?JMP=yes"..exargs)
+
+			--avatar jumpstart
+		elseif string.match(request, "^[Tt][Ll][Ee]") then
+
+			getpack(site..tp().."/precon/?TLE=yes"..exargs)
+		
+			--jumpstart 2022
+		elseif string.match(request, "^[Jj]22") then
+
+			getpack(site..tp().."/precon/?J22=yes"..exargs)
+
+			--foundations jumpstart
+		elseif string.match(request, "^[Jj]25") then
+
+			getpack(site..tp().."/precon/?J25=yes"..exargs)
 
 		elseif request then
 
