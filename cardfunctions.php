@@ -232,7 +232,7 @@ function getcard($cnd){
 		$sql = $sql.$filterstart.$fbuild.$filterend;
 	}
 
-	$bannedsets = "and isOnlineOnly is NULL and borderColor <> 'gold' and cards.setCode not in ('4BB', 'FBB', 'PHJ', 'PJJT', 'PMPS', 'PSAL', 'PMPS06', 'PMPS07', 'PMPS08', 'PMPS09', 'PMPS10', 'PMPS11', 'PRED', 'PS11', 'REN', 'RIN') ";
+	$bannedsets = "and isOnlineOnly = 0 and borderColor <> 'gold' and cards.setCode not in ('4BB', 'FBB', 'PHJ', 'PJJT', 'PMPS', 'PSAL', 'PMPS06', 'PMPS07', 'PMPS08', 'PMPS09', 'PMPS10', 'PMPS11', 'PRED', 'PS11', 'REN', 'RIN') ";
 
 	if(isset($cnd["name"])){
 
@@ -497,15 +497,17 @@ function printJSON($cardlist, $aback = null, $aface = null, $apos = null, $arot 
 		}
 
 		if(isset($card["otherFaceIds"])){
-			foreach(explode(",",$card["otherFaceIds"]) as $otherface){
-				$othercard = getother($otherface);
+			if($card["otherFaceIds"] != ""){
+				foreach(explode(",",$card["otherFaceIds"]) as $otherface){
+					$othercard = getother($otherface);
 
-				$description = $description."\n//\n\n".$othercard["text"]."\n";
-				if(isset($othercard["power"])){
-					$description = $description."\n".$othercard["power"]."/".$othercard["toughness"]."\n";	
-				}
-				if(isset($othercard["loyalty"])){
-					$description = $description."\n".$othercard["loyalty"]." Loyalty\n";
+					$description = $description."\n//\n\n".$othercard["text"]."\n";
+					if(isset($othercard["power"])){
+						$description = $description."\n".$othercard["power"]."/".$othercard["toughness"]."\n";	
+					}
+					if(isset($othercard["loyalty"])){
+						$description = $description."\n".$othercard["loyalty"]." Loyalty\n";
+					}
 				}
 			}
 		}
@@ -526,7 +528,6 @@ function printJSON($cardlist, $aback = null, $aface = null, $apos = null, $arot 
 		}
 
 		$description = addslashes($description);
-
 
 		if(isset($aface) and $aface != ""){
 			$face = $aface;
