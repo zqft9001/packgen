@@ -15,30 +15,20 @@ function gettokens($cnd){
 
 	global $FailtoFind;
 
-
 	if(strlen($cnd["name"]) <= 0){
 		return null;
 	}
 
 	$pack = null;
 
-	static $trycount = 0;
-
-	$trycount = $trycount + 1;
-
-	if($trycount > 100){
-		return;
-	}
-
 	//gets a token based on the conditions provided
-	//Gives up after 100 tries.
 
 	$conn = new mysqli(SERVERNAME, USERNAME, PASSWORD, DBNAME);
 	if ($conn->connect_error) {
 		die("Connection failed: " . $conn->connect_error);
 	}
 
-	$sql = "select * from tokens where tokens.relatedcards like '%".$cnd["name"]."%' or tokens.name like '%".$cnd["name"]."%' and tokens.side is null;";
+	$sql = "select * from tokens where (tokens.relatedcards like '%".$cnd["name"]."%' or tokens.name like '%".$cnd["name"]."%') and tokens.setcode not in ('FBRO', 'FCLU', 'FDMU', 'FFDN', 'FJ22', 'FJ25', 'FJMP', 'FLTR', 'FMOM', 'FONE', 'FTLA', 'FTMC', 'JTLA')";
 
 	if($cnd["sql"]=="yes"){
 		echo $sql;
@@ -48,7 +38,9 @@ function gettokens($cnd){
 
 	for($i = 0; $i < $result->num_rows; $i = $i + 1){
 		$result->data_seek($i);
-		$pack[] = $result->fetch_array();
+		$token = $result->fetch_array();
+		$token["isToken"] = "yes";
+		$pack[] = $token;
 	}
 
 	$conn->close();
@@ -68,6 +60,8 @@ function gettokens($cnd){
 //gets scryfall face for meld cards
 function getother($otherface){
 
+	global $FailtoFind;
+
 	$conn = new mysqli(SERVERNAME, USERNAME, PASSWORD, DBNAME);
 	if ($conn->connect_error) {
 		die("Connection failed: " . $conn->connect_error);
@@ -78,16 +72,28 @@ function getother($otherface){
 	$result = $conn->query($sql);
 
 	if (is_object($result)){
-		if ($result->num_rows < 1){
-			return "Fail to Find";
+
+		if ($result->num_rows > 0){
+
+			$card = $result->fetch_array();
+			$conn->close();
+			return $card;
+		} else {
+
+			$sql = "select * from tokens where tokens.uuid like \"".$otherface."\";";
+
+			$result = $conn->query($sql);
+
+			if ($result->num_rows > 0){
+				$card = $result->fetch_array();
+				$conn->close();
+				return $card;
+			}
 		}
 
-		$card = $result->fetch_array();
-	} else {
-		return "Fail to Find";
 	}
 	$conn->close();
-	return $card;
+	return $FailtoFind;
 
 }
 
@@ -141,16 +147,7 @@ function fuzzyget($variant, $condition = null){
 
 function getcard($cnd){
 
-	static $trycount = 0;
-
-	$trycount = $trycount + 1;
-
-	if($trycount > 1000){
-		return array();
-	}
-
 	//gets a card from a set based on the conditions provided
-	//Gives up after 1000 tries.
 
 	$conn = new mysqli(SERVERNAME, USERNAME, PASSWORD, DBNAME);
 	if ($conn->connect_error) {
@@ -303,7 +300,6 @@ function getimagebyuuid($uuid, $special = ""){
 	}else{
 
 		$sql = "select * from cardIdentifiers where cardIdentifiers.uuid like \"".$uuid."\";";
-
 	}
 
 	$result = $conn->query($sql);
@@ -466,6 +462,8 @@ function printJSON($cardlist, $aback = null, $aface = null, $apos = null, $arot 
 
 		$nickname = null;
 
+		$gm = null;
+
 		$uuid = $card["uuid"];
 
 		$script = null;
@@ -512,16 +510,11 @@ function printJSON($cardlist, $aback = null, $aface = null, $apos = null, $arot 
 			}
 		}
 
-
-		if(strpos($description, "reate ") or strpos($description, "reates ") or strpos($description, "emblem") or strpos($description, "you become the monarch") or strpos($description, "you get the city")){
+		if(isset($card["relatedCards"]) and !isset($card["isToken"])){
 			$script = $script."\nself.addContextMenuItem('Get Token(s)', function() local porter = getObjectFromGUID('".$GUID."') porter.call('selftoken', {name=\\\"".addslashes($card["name"])."\\\", ref=self, owner=\\\"".$note."\\\"}) end)";
 		}
 
 		$description =  $description."\n".$card["setCode"].':'.$card["number"];
-
-		if(isset($card["relatedcards"])){
-			$description = $description."\nSource(s): ".$card["relatedcards"];
-		}
 
 		if(isset($card["cutsheet"])){
 			$description = $description."\n".$card["cutsheet"];
@@ -534,14 +527,16 @@ function printJSON($cardlist, $aback = null, $aface = null, $apos = null, $arot 
 		}elseif(isset($card["image"])){
 			$face = $card["image"];
 		} else {
-			if($card["layout"] == "token"){
+			if(isset($card["isToken"])){
 				$face = getimagebyuuid($card["uuid"], "token");
 			}else{
 				$face = getimagebyuuid($card["uuid"]);
 			}
 		}
 
-		$gm = $card["name"].';'.$uuid.';'.$face;
+		$gm = $gm.$card["name"].';'.$uuid.';'.$face;
+
+		$gm = addslashes($gm);
 
 		if($card["otherFaceIds"] != null and $card["layout"] != "split" and $card["layout"] != "aftermath" and $card["layout"] != "flip"){
 			if($card["layout"] == "meld"){
