@@ -38,7 +38,7 @@ function gettokens($cnd){
 		die("Connection failed: " . $conn->connect_error);
 	}
 
-	$sql = "select * from tokens where tokens.reverserelated like '%".$cnd["name"]."%' or tokens.name like '%".$cnd["name"]."%' and tokens.side is null;";
+	$sql = "select * from tokens where tokens.relatedcards like '%".$cnd["name"]."%' or tokens.name like '%".$cnd["name"]."%' and tokens.side is null;";
 
 	if($cnd["sql"]=="yes"){
 		echo $sql;
@@ -232,7 +232,7 @@ function getcard($cnd){
 		$sql = $sql.$filterstart.$fbuild.$filterend;
 	}
 
-	$bannedsets = "and isOnlineOnly = 0 and borderColor <> 'gold' and cards.setCode not in ('4BB', 'FBB', 'PHJ', 'PJJT', 'PMPS', 'PSAL', 'PMPS06', 'PMPS07', 'PMPS08', 'PMPS09', 'PMPS10', 'PMPS11', 'PRED', 'PS11', 'REN', 'RIN') ";
+	$bannedsets = "and isOnlineOnly is null and borderColor <> 'gold' and cards.setCode not in ('4BB', 'FBB', 'PHJ', 'PJJT', 'PMPS', 'PSAL', 'PMPS06', 'PMPS07', 'PMPS08', 'PMPS09', 'PMPS10', 'PMPS11', 'PRED', 'PS11', 'REN', 'RIN') ";
 
 	if(isset($cnd["name"])){
 
@@ -519,8 +519,8 @@ function printJSON($cardlist, $aback = null, $aface = null, $apos = null, $arot 
 
 		$description =  $description."\n".$card["setCode"].':'.$card["number"];
 
-		if(isset($card["reverseRelated"])){
-			$description = $description."\nSource(s): ".$card["reverseRelated"];
+		if(isset($card["relatedcards"])){
+			$description = $description."\nSource(s): ".$card["relatedcards"];
 		}
 
 		if(isset($card["cutsheet"])){
