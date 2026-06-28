@@ -1,4 +1,4 @@
 db_defs.php
-precon/json/
+precon/json/*
 !precon/json/index.php
-image_cache/
+image_cache/*
