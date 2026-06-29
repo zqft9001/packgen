@@ -1,5 +1,7 @@
 <?php
 
+include('cachedefs.php');
+
 $FailtoFind = [
 	"name" => "Fail to Find",
 	"type" => "Error Message",
@@ -315,12 +317,13 @@ function getimagebyuuid($uuid, $special = ""){
 
 
 	$conn->close();
+
+	global $scryfallcache;
+
 	if ($special == "back"){
-		$imageurl = 'https://cards.scryfall.io/normal/back/'.substr($card["scryfallId"],0,1).'/'.substr($card["scryfallId"],1,1).'/'.$card["scryfallId"].'.jpg';
-		return cacheimage($imageurl, $card["scryfallId"], $special);
+		return $scryfallcache.'/normal/back/'.substr($card["scryfallId"],0,1).'/'.substr($card["scryfallId"],1,1).'/'.$card["scryfallId"].'.jpg';
 	}
-	$imageurl = 'https://cards.scryfall.io/normal/front/'.substr($card["scryfallId"],0,1).'/'.substr($card["scryfallId"],1,1).'/'.$card["scryfallId"].'.jpg';
-	return cacheimage($imageurl, $card["scryfallId"]);
+	return $scryfallcache.'/normal/front/'.substr($card["scryfallId"],0,1).'/'.substr($card["scryfallId"],1,1).'/'.$card["scryfallId"].'.jpg';
 }
 
 function cacheimage($imageurl, $imagename, $special = ""){
@@ -328,21 +331,6 @@ function cacheimage($imageurl, $imagename, $special = ""){
 	global $FailtoFind;
 
 	$filepath = "/image_cache/".$imagename.$special.".jpg";
-
-	//if the file doesn't exist, create it. Don't check if it downloaded correctly, that'll take forever.
-
-	if(!file_exists(__DIR__.$filepath)){
-
-		$fp = fopen(__DIR__.$filepath, 'w');
-		$ch = curl_init($imageurl);
-		curl_setopt($ch, CURLOPT_FILE, $fp);
-		curl_setopt($ch, CURLOPT_FOLLOWLOCATION, true);
-		curl_exec($ch);
-		curl_close($ch);
-		fclose($fp);
-	}
-
-	return $_SERVER['SERVER_NAME']."/t".$filepath;
 }
 
 //Generates a rarity based on the length of the string passed.
