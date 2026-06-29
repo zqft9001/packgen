@@ -2,6 +2,10 @@
 
 include('../consume.php');
 
+print_r(dirname(__DIR__));
+
+echo "<BR>";
+
 //Displays all images in the directory. Make it nicer later.
 
 if(isset($gclean['clearcache'])){
@@ -11,6 +15,8 @@ if(isset($gclean['clearcache'])){
 }
 
 $directory = scandir('./');
+
+echo count($directory);
 
 foreach ($directory as $file){
 	if(str_contains($file, ".jpg")){
@@ -23,10 +29,8 @@ foreach ($directory as $file){
 			}
 
 		}else{
-			echo "<img src=\"".$file."\">";
-
-			print_r($gclean);
-			print_r($gclean['clearcache']);
+			echo "<BR>";
+			echo $file;
 		}
 	}
 }
