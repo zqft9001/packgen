@@ -1,5 +1,6 @@
 <?php
 
+
 //input consume and set up DB connection
 include('consume.php');
 
@@ -9,10 +10,8 @@ include('packgendefs.php');
 //defines card functions
 include('cardfunctions.php');
 
-
 //makes the file output as plain text instead of html
 header('Content-type: text/plain');
-
 
 /*
 ini_set('display_errors', 1);
@@ -102,14 +101,12 @@ if(array_key_exists("custom", $gclean)){
 } else {
 	$custom = "";
 }
-//wacky packs
-//kami - all legendary cards, rarity ignored, set ignored, 15 card pack.
-//color - grabs only cards of a specific color (from set if specified)
 
 //define array for adding cards to a pack
 $pack = array();
 
 //get set info
+
 $sql = "SELECT * FROM sets where sets.code like '%".$set."%' and sets.booster is not null order by rand() limit 1;";
 
 $result = $conn->query($sql);

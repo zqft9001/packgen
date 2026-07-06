@@ -106,50 +106,84 @@ function fuzzyget($variant, $condition = null){
 
 	global $FailtoFind;
 
+	//local variable to provide error data in addition to fallback card.
 	$F2F = $FailtoFind;
 
+	//if any conditions are set, use them
 	if(isset($condition)){
 
+		//search by given condition
 		$cnd = null;
 		$cnd[$condition] = $variant;
 		$card = getcard($cnd);
+
 		if(count($card) > 0){
 			return $card;
-		} else {
-			$cnd["fuzzy"] = "yes";
-			$card = getcard($cnd);
-			if(count($card) > 0){
-				return $card;
-			} else {
-				$F2F["text"] = $F2F["text"].$condition.": ".$variant."\n";
-				return array($F2F);
-			}
 		}
 
-	} else {
-		$card = getcard($variant);
+		//Search by facename
+		$cvar = $variant;
+		$cvar["facename"] = "yes";
+		$card = getcard($cvar);
+		
 		if(count($card) > 0){
 			return $card;
-		} else {
-			$cvar = $variant;
-			$cvar["fuzzy"] = "yes";
-			$card = getcard($cvar);
-			if(count($card) > 0){
-				return $card;
-			} else {
-				foreach($variant as $key=>$value){
-					$F2F["text"] = $F2F["text"].$key.": ".$value."\n";
-				}
-				return array($F2F);
-			}
+		} 
+
+		//Search by partial name
+		$cvar = $variant;
+		$cvar["fuzzy"] = "yes";
+		$card = getcard($cvar);
+		
+		if(count($card) > 0){
+			return $card;
 		}
+
+		//give up
+		foreach($variant as $key=>$value){
+			$F2F["text"] = $F2F["text"].$key.": ".$value."\n";
+		}
+		return array($F2F);
+
+	} else {
+		//search with no additional conditions
+		$card = getcard($variant);
+
+		if(count($card) > 0){
+			return $card;
+		}
+
+		//Search by facename
+		$cvar = $variant;
+		$cvar["facename"] = "yes";
+		$card = getcard($cvar);
+		
+		if(count($card) > 0){
+			return $card;
+		} 
+
+		//Search by partial name
+		$cvar = $variant;
+		$cvar["fuzzy"] = "yes";
+		$card = getcard($cvar);
+		
+		if(count($card) > 0){
+			return $card;
+		}
+
+		//give up
+		foreach($variant as $key=>$value){
+			$F2F["text"] = $F2F["text"].$key.": ".$value."\n";
+		}
+		return array($F2F);
+
 	}
 
 }
 
 function getcard($cnd){
 
-	//gets a card from a set based on the conditions provided
+	//gets an array of cards based on the conditions provided
 
 	$conn = new mysqli(SERVERNAME, USERNAME, PASSWORD, DBNAME);
 	if ($conn->connect_error) {
@@ -161,11 +195,7 @@ function getcard($cnd){
 	$filterstart = " where ";
 	$fbuild = "";
 	$filterend = "and (cards.side IS NULL OR cards.side = 'a');";
-/*
-	if(isset($cnd["max cn"])){
-		$fbuild = $fbuild."and cards.number <= ".$cnd["max cn"]." ";
-	}
- */
+
 	if(isset($cnd["cn"])){
 		if(is_numeric($cnd["cn"])){
 			$fbuild = $fbuild."and cards.number = ".$cnd["cn"]." ";
@@ -173,75 +203,30 @@ function getcard($cnd){
 			$fbuild = $fbuild."and cards.number like '".$cnd["cn"]."' ";
 		}
 	}
-/*
-	if(isset($cnd["colorless"]) and $cnd["colorless"] == 1){
-		$fbuild = $fbuild."and cards.colors is null ";
-	}
 
-	if(isset($cnd["colorIDless"]) and $cnd["colorIDless"] == 1){
-		$fbuild = $fbuild."and cards.coloridentity is null ";
-	}
-
-	if(isset($cnd["colors"])){
-		if(is_array($cnd["colors"])){
-			foreach($cnd["colors"] as $color){
-				$fbuild = $fbuild."and cards.colors like '%".$color."%' ";
-			} 
-		} else {
-			$fbuild = $fbuild."and cards.colors like '%".$cnd["colors"]."%' ";
-		}
-	}
-
-	if(isset($cnd["colorIDs"])){
-		if(is_array($cnd["colorIDs"])){
-			foreach($cnd["colorIDs"] as $color){
-				$fbuild = $fbuild."and cards.coloridentity like '%".$color."%' ";
-			} 
-		} else {
-			$fbuild = $fbuild."and cards.coloridentity like '%".$cnd["colorIDs"]."%' ";
-		}
-	}
- */
 	if(isset($cnd["set"])){
 		$fbuild = $fbuild."and cards.setCode = '".$cnd["set"]."' ";
 	}
-/*
-	if(isset($cnd["rarity"])){
-		$fbuild = $fbuild."and cards.rarity = '".$cnd["rarity"]."' ";
-	}
 
-	if(isset($cnd["timeshifted"])){
-		$fbuild = $fbuild."and cards.isTimeshifted = ".$cnd["timeshifted"]." ";
-	}
-
-	if(isset($cnd["frameEffect"])){
-		$fbuild = $fbuild."and cards.frameEffect like '%".$cnd["frameEffect"]."%' ";
-	}
-
-	if(isset($cnd["noframeEffect"]) and $cnd["noframeEffect"] == 1){
-		$fbuild = $fbuild."and cards.frameEffect is null ";
-	}
-
-	if(isset($cnd["type"])){
-		$fbuild = $fbuild."and cards.type like '%".$cnd["type"]."%' ";
-	}
- */
 	if (strlen($fbuild)>0){
 		$fbuild = substr($fbuild, 4);
 		$sql = $sql.$filterstart.$fbuild.$filterend;
 	}
 
+	//List of sets to never return results from for regular deck spawning.
 	$bannedsets = "and isOnlineOnly is null and borderColor <> 'gold' and cards.setCode not in ('4BB', 'FBB', 'PHJ', 'PJJT', 'PMPS', 'PSAL', 'PMPS06', 'PMPS07', 'PMPS08', 'PMPS09', 'PMPS10', 'PMPS11', 'PRED', 'PS11', 'REN', 'RIN') ";
 
+	//Name Searches
 	if(isset($cnd["name"])){
 
-		if(isset($cnd["fuzzy"])){
+		if(isset($cnd["facename"])){
+			$sql = "select * from cards where cards.facename like \"".$cnd["name"]."\" ".$bannedsets.$filterend;
+		}elseif(isset($cnd["fuzzy"])){
 			$sql = "select * from cards where cards.name like \"%".$cnd["name"]."%\" ".$bannedsets.$filterend;
 		} else {
 			$sql = "select * from cards where cards.name = \"".$cnd["name"]."\" ".$bannedsets.$filterend;
 		}
 	}
-
 
 	if(isset($cnd["id"])){
 		$sql = "select * from cards where cards.uuid = '".$cnd["id"]."';";
@@ -258,6 +243,7 @@ function getcard($cnd){
 	$result = $conn->query($sql);
 
 	if ($result->num_rows < 1){
+		$conn->close();
 		return array();
 	}
 
@@ -324,13 +310,6 @@ function getimagebyuuid($uuid, $special = ""){
 		return $scryfallcache.'/normal/back/'.substr($card["scryfallId"],0,1).'/'.substr($card["scryfallId"],1,1).'/'.$card["scryfallId"].'.jpg';
 	}
 	return $scryfallcache.'/normal/front/'.substr($card["scryfallId"],0,1).'/'.substr($card["scryfallId"],1,1).'/'.$card["scryfallId"].'.jpg';
-}
-
-function cacheimage($imageurl, $imagename, $special = ""){
-
-	global $FailtoFind;
-
-	$filepath = "/image_cache/".$imagename.$special.".jpg";
 }
 
 //Generates a rarity based on the length of the string passed.
@@ -552,7 +531,7 @@ function printJSON($cardlist, $aback = null, $aface = null, $apos = null, $arot 
 
 		$gm = addslashes($gm);
 
-		if($card["otherFaceIds"] != null and $card["layout"] != "split" and $card["layout"] != "aftermath" and $card["layout"] != "flip"){
+		if($card["otherFaceIds"] != null and ($card["layout"] == "transform" or $card["layout"] == "modal_dfc" or $card["layout"] == "reversible_card" or $card["layout"] == "meld")){
 			if($card["layout"] == "meld"){
 				$meldface = getother($card["otherFaceIds"])["uuid"];
 				$dfcback = getimagebyuuid($meldface);
@@ -656,7 +635,7 @@ function printJSON($cardlist, $aback = null, $aface = null, $apos = null, $arot 
 				"Type": 0
 		}
 		},
-			"LuaScript": "',$script,'",
+			"LuaScript": "',$script."\nfunction onObjectEnterZone(zone, object) if object == self then object.setState(1) end end",'",
 			"LuaScriptState": "",
 			"XmlUI": "",
 			"GUID": "947dc9"
