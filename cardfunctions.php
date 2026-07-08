@@ -465,6 +465,10 @@ function printJSON($cardlist, $aback = null, $aface = null, $apos = null, $arot 
 			$card["manaValue"] = "0";
 		}
 
+		if($card["manaValue"] == "0"){
+			$card["manaCost"] = null;
+		}
+
 		if(isset($card["note"])){
 			//new notes change position of pile
 			if($note != $card["note"]." ".$anote){
@@ -474,6 +478,10 @@ function printJSON($cardlist, $aback = null, $aface = null, $apos = null, $arot 
 		}
 
 		$nickname = addslashes($card["name"]).' | '.$card["type"].' | MV '.$card["manaValue"].' | '.$note;
+
+		if(isset($card["manaCost"])){
+			$description = $description.$card["manaCost"]."\n\n";
+		}
 
 		if(isset($card["text"])){
 			$description = $description.$card["text"]."\n";
@@ -489,13 +497,27 @@ function printJSON($cardlist, $aback = null, $aface = null, $apos = null, $arot 
 
 		if(isset($card["otherFaceIds"])){
 			if($card["otherFaceIds"] != ""){
-				foreach(explode(",",$card["otherFaceIds"]) as $otherface){
+				foreach(explode(", ",$card["otherFaceIds"]) as $otherface){
 					$othercard = getother($otherface);
 
-					$description = $description."\n//\n\n".$othercard["text"]."\n";
+					$description = $description."\n// ".$othercard["type"]."\n";
+						
+					if(isset($othercard["manaCost"])){
+						if($othercard["manaCost"] <> ""){
+							$description = $description.$othercard["manaCost"]."\n";
+						}
+					}
+
+					$description = $description."\n";
+					
+					if(isset($othercard["text"])){
+						$description = $description.$othercard["text"]."\n";
+					}
+					
 					if(isset($othercard["power"])){
 						$description = $description."\n".$othercard["power"]."/".$othercard["toughness"]."\n";	
 					}
+				
 					if(isset($othercard["loyalty"])){
 						$description = $description."\n".$othercard["loyalty"]." Loyalty\n";
 					}
