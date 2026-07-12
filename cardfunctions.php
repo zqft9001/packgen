@@ -30,7 +30,7 @@ function gettokens($cnd){
 		die("Connection failed: " . $conn->connect_error);
 	}
 
-	$sql = "select * from tokens where (tokens.relatedcards like '%".$cnd["name"]."%' or tokens.name like '%".$cnd["name"]."%') and tokens.setcode not in ('FBRO', 'FCLU', 'FDMU', 'FFDN', 'FJ22', 'FJ25', 'FJMP', 'FLTR', 'FMOM', 'FONE', 'FTLA', 'FTMC', 'JTLA')";
+	$sql = "select * from tokens where (tokens.relatedcards like '%".$cnd["name"]."%' or tokens.name like '%".$cnd["name"]."%') and (tokens.side like 'a' or tokens.side is null) and tokens.setcode not in ('FBRO', 'FCLU', 'FDMU', 'FFDN', 'FJ22', 'FJ25', 'FJMP', 'FLTR', 'FMOM', 'FONE', 'FTLA', 'FTMC', 'JTLA')";
 
 	if($cnd["sql"]=="yes"){
 		echo $sql;
@@ -274,14 +274,14 @@ function getcard($cnd){
 
 }
 
-function getimagebyuuid($uuid, $special = ""){
+function getimagebyuuid($uuid, $special = array()){
 
 	$conn = new mysqli(SERVERNAME, USERNAME, PASSWORD, DBNAME);
 	if ($conn->connect_error) {
 		die("Connection failed: " . $conn->connect_error);
 	}
 
-	if ($special == "token"){
+	if (isset($special["token"])){
 
 		$sql = "select * from tokenIdentifiers where tokenIdentifiers.uuid like \"".$uuid."\";";
 
@@ -306,7 +306,7 @@ function getimagebyuuid($uuid, $special = ""){
 
 	global $scryfallcache;
 
-	if ($special == "back"){
+	if (isset($special["back"])){
 		return $scryfallcache.'/normal/back/'.substr($card["scryfallId"],0,1).'/'.substr($card["scryfallId"],1,1).'/'.$card["scryfallId"].'.jpg';
 	}
 	return $scryfallcache.'/normal/front/'.substr($card["scryfallId"],0,1).'/'.substr($card["scryfallId"],1,1).'/'.$card["scryfallId"].'.jpg';
@@ -543,7 +543,7 @@ function printJSON($cardlist, $aback = null, $aface = null, $apos = null, $arot 
 			$face = $card["image"];
 		} else {
 			if(isset($card["isToken"])){
-				$face = getimagebyuuid($card["uuid"], "token");
+				$face = getimagebyuuid($card["uuid"], array("token"  =>  "yes"));
 			}else{
 				$face = getimagebyuuid($card["uuid"]);
 			}
@@ -553,12 +553,17 @@ function printJSON($cardlist, $aback = null, $aface = null, $apos = null, $arot 
 
 		$gm = addslashes($gm);
 
-		if($card["otherFaceIds"] != null and ($card["layout"] == "transform" or $card["layout"] == "modal_dfc" or $card["layout"] == "reversible_card" or $card["layout"] == "meld")){
+		if($card["otherFaceIds"] != null and ($card["layout"] == "transform" or $card["layout"] == "modal_dfc" or $card["layout"] == "reversible_card" or $card["layout"] == "meld" or $card["layout"] == "double_faced_token" or $card["layout"] == "art_series")){
 			if($card["layout"] == "meld"){
 				$meldface = getother($card["otherFaceIds"])["uuid"];
 				$dfcback = getimagebyuuid($meldface);
 			} else {
-				$dfcback = getimagebyuuid($card["uuid"], "back");
+				$tokenback = array();
+				if(isset($card["isToken"])){
+					$tokenback["token"] = "yes";
+				}
+				$tokenback["back"] = "yes";
+				$dfcback = getimagebyuuid($card["uuid"], $tokenback);
 			}
 			echo '{
 			"Name": "Card",
