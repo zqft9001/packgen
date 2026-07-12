@@ -196,16 +196,22 @@ function getcard($cnd){
 	$fbuild = "";
 	$filterend = "and (cards.side IS NULL OR cards.side = 'a');";
 
+	$cn = "";
+
 	if(isset($cnd["cn"])){
 		if(is_numeric($cnd["cn"])){
-			$fbuild = $fbuild."and cards.number = ".$cnd["cn"]." ";
+			$cn = "and cards.number = ".$cnd["cn"]." ";
 		} else {
-			$fbuild = $fbuild."and cards.number like '".$cnd["cn"]."' ";
+			$cn = "and cards.number like '".$cnd["cn"]."' ";
 		}
+		$fbuild = $fbuild.$cn;
 	}
 
+	$set = "";
+
 	if(isset($cnd["set"])){
-		$fbuild = $fbuild."and cards.setCode = '".$cnd["set"]."' ";
+		$set = "and cards.setCode = '".$cnd["set"]."' ";
+		$fbuild = $fbuild.$set;
 	}
 
 	if (strlen($fbuild)>0){
@@ -220,11 +226,11 @@ function getcard($cnd){
 	if(isset($cnd["name"])){
 
 		if(isset($cnd["facename"])){
-			$sql = "select * from cards where cards.facename like \"".$cnd["name"]."\" ".$bannedsets.$filterend;
+			$sql = "select * from cards where cards.facename like \"".$cnd["name"]."\" ".$bannedsets.$set.$cn.$filterend;
 		}elseif(isset($cnd["fuzzy"])){
-			$sql = "select * from cards where cards.name like \"%".$cnd["name"]."%\" ".$bannedsets.$filterend;
+			$sql = "select * from cards where cards.name like \"%".$cnd["name"]."%\" ".$bannedsets.$set.$cn.$filterend;
 		} else {
-			$sql = "select * from cards where cards.name = \"".$cnd["name"]."\" ".$bannedsets.$filterend;
+			$sql = "select * from cards where cards.name = \"".$cnd["name"]."\" ".$bannedsets.$set.$cn.$filterend;
 		}
 	}
 
