@@ -45,7 +45,7 @@ foreach($lines[1] as $line){
 	if($line != "" and preg_match("/[Ss]ideboard.*/", $line, $numname) == 1){
 		$section = "Sideboard";
 
-	} elseif($line != "" and preg_match("/([0-9]+)\s([^[].*)/", $line, $numname) == 1){
+	} elseif($line != "" and preg_match("/([0-9]+)\s(.*)/", $line, $numname) == 1 and !str_contains($line, "[")){
 
 		for($i = 0; $i < $numname[1]; $i++){
 

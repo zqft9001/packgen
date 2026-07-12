@@ -30,7 +30,7 @@ function gettokens($cnd){
 		die("Connection failed: " . $conn->connect_error);
 	}
 
-	$sql = "select * from tokens where (tokens.relatedcards like '%".$cnd["name"]."%' or tokens.name like '%".$cnd["name"]."%') and (tokens.side like 'a' or tokens.side is null) and tokens.setcode not in ('FBRO', 'FCLU', 'FDMU', 'FFDN', 'FJ22', 'FJ25', 'FJMP', 'FLTR', 'FMOM', 'FONE', 'FTLA', 'FTMC', 'JTLA')";
+	$sql = "select * from tokens where (tokens.relatedcards like '%".$cnd["name"]."%' or tokens.name like '%".$cnd["name"]."%') and (tokens.side like 'a' or tokens.side is null)";
 
 	if($cnd["sql"]=="yes"){
 		echo $sql;
