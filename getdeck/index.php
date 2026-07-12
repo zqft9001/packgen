@@ -45,7 +45,8 @@ foreach($lines[1] as $line){
 	if($line != "" and preg_match("/[Ss]ideboard.*/", $line, $numname) == 1){
 		$section = "Sideboard";
 
-	} elseif($line != "" and preg_match("/([0-9]+)\s(.*)/", $line, $numname) == 1 and !str_contains($line, "[")){
+	//# name
+	} elseif($line != "" and preg_match("/^([0-9]+)\s(.*)/", $line, $numname) == 1 and !str_contains($line, "[")){
 
 		for($i = 0; $i < $numname[1]; $i++){
 
@@ -53,15 +54,17 @@ foreach($lines[1] as $line){
 
 		}
 
-	}elseif($line != "" and preg_match("/([0-9]+)\s\[[A-Za-z0-9]{3}\]\s([^[].*)/", $line, $numname) == 1){
+	//# [setcode] name
+	}elseif($line != "" and preg_match("/^([0-9]+)\s\[([A-Za-z0-9].*)\]\s([^[].*)/", $line, $numname) == 1){
 
 		for($i = 0; $i < $numname[1]; $i++){
 
-			$cardnames[] = [ "name" => $numname[2], "note" => $section ];
+			$cardnames[] = [ "set" => $numname[2], "name" => $numname[3], "note" => $section ];
 
 		}
 
-	}elseif($line != "" and preg_match("/([0-9]+).*\[(.*):(.*)\]/", $line, $setcn) == 1){
+	//# name [setcode:cn]
+	}elseif($line != "" and preg_match("/^([0-9]+).*\[(.*):(.*)\]/", $line, $setcn) == 1){
 
 		for($i = 0; $i < $setcn[1]; $i++){
 
@@ -86,6 +89,10 @@ if(isset($cardnames)){
 foreach($cardnames as $cardname){
 
 	$cnd = null;
+
+	if(isset($cardname["set"])){
+		$cnd["set"] = $cardname["set"];
+	}
 
 	$cnd["name"] = $cardname["name"];
 	$card = fuzzyget($cnd)[0];
