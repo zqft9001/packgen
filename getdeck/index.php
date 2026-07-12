@@ -45,8 +45,20 @@ foreach($lines[1] as $line){
 	if($line != "" and preg_match("/[Ss]ideboard.*/", $line, $numname) == 1){
 		$section = "Sideboard";
 
+	//#x name (setcode) cn
+	//the arena/moxfield paste format
+	}elseif($line != "" and preg_match("/^([0-9]+)[Xx]*\s(.*)\s\(([A-Za-z0-9]*)\)\s([A-Za-z0-9\-]*)/", $line, $setcn) == 1){
+		for($i = 0; $i < $setcn[1]; $i++){
+			$cardsetnum[] = [
+				"set" => $setcn[3],
+				"cn" => $setcn[4],
+				"note" => $section,
+			];
+
+		}
+	
 	//# name
-	} elseif($line != "" and preg_match("/^([0-9]+)\s(.*)/", $line, $numname) == 1 and !str_contains($line, "[")){
+	} elseif($line != "" and preg_match("/^([0-9]+)[Xx]*\s(.*)/", $line, $numname) == 1 and !str_contains($line, "[")){
 
 		for($i = 0; $i < $numname[1]; $i++){
 
@@ -76,18 +88,6 @@ foreach($lines[1] as $line){
 
 		}
 
-	//#x name (setcode) cn
-	//the arena paste format
-	}elseif($line != "" and preg_match("/^([0-9]+)x\s(.*)\s\(([A-Za-z0-9]*)\)\s([A-Za-z0-9]*)/", $line, $setcn) == 1){
-		for($i = 0; $i < $setcn[1]; $i++){
-			$cardsetnum[] = [
-				"set" => $setcn[3],
-				"cn" => $setcn[4],
-				"note" => $section,
-			];
-
-		}
-	
 	} elseif($line != ""){
 		$section = $line;
 	}
