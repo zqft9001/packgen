@@ -76,6 +76,18 @@ foreach($lines[1] as $line){
 
 		}
 
+	//#x name (setcode) cn
+	//the arena paste format
+	}elseif($line != "" and preg_match("/^([0-9]+)x\s(.*)\s\(([A-Za-z0-9]*)\)\s([A-Za-z0-9]*)/", $line, $setcn) == 1){
+		for($i = 0; $i < $setcn[1]; $i++){
+			$cardsetnum[] = [
+				"set" => $setcn[3],
+				"cn" => $setcn[4],
+				"note" => $section,
+			];
+
+		}
+	
 	} elseif($line != ""){
 		$section = $line;
 	}
