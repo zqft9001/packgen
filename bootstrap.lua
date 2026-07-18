@@ -235,30 +235,37 @@ end
 --Decksite to text file
 function decktranslate(a)
 
+	--assume the link is to the deck's page if it's not just a text file.
+
 	a = a:gsub('#.*', '')
 
 	if a:match('tappedout.net') and not a:match('?fmt=txt') then
 		a = a:gsub('?.*', '')
 		a = a:gsub('.cb=%d+','')..'?fmt=txt'
+		return a
 	end
+	
 	if a:match('mtgdecks.net') and not a:match('/txt') then
 		a = a:gsub('.cb=%d+','')..'/txt'
+		return a
 	end
-	if a:match('mtggoldfish.com') then
-		if not a:match('/deck/download/') then
-			a = a:gsub('/deck/','/deck/download/')
-		end
-
+	
+	if a:match('mtggoldfish.com') and not a:match('/deck/download/') then
+		a = a:gsub('/deck/','/deck/download/')
+		return a
 	end
 
 	if a:match('deckstats.net') and not a:match('?export_txt=1') then
 		a = a..'?export_txt=1'
+		return a
 	end
 
 	if a:match('scryfall.com') and not a:match('/export/text') then
 		a = a:gsub('.*/decks/','https://api.scryfall.com/decks/').."/export/text"
+		return a
 	end
 
+	--if it wasn't a supported deck site, probably just a text file.
 	return a
 
 end
@@ -431,16 +438,15 @@ function parseMessage(msg, position, rotation, owner)
 				"s token teysa",
 				"s token spirit",
 				"s deck https://tappedout.net/mtg-decks/tts-importer-test/",
+				"s deck https://scryfall.com/@giantweevil/decks/4c651538-39ff-48b2-af31-cabce54551b5",
 				"s deck mirror mastery",
 				"s scale 2",
 				"s jmp",
 				"s scale",
 				"s back https://i.imgur.com/hg32UEH.mp4",
-				"s mh2",
 				"s card teysa, envoy of",
 				"s card teysa, orzhov scion",
 				"s back",
-				"s pack",
 				"s card giant growth",
 				"s card text/html"
 			}
