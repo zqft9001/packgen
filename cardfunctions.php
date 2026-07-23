@@ -532,7 +532,15 @@ function printJSON($cardlist, $aback = null, $aface = null, $apos = null, $arot 
 		}
 
 		if(isset($card["relatedCards"]) and !isset($card["isToken"])){
-			$script = $script."\nself.addContextMenuItem('Get Token(s)', function() local porter = getObjectFromGUID('".$GUID."') porter.call('selftoken', {name=\\\"".addslashes($card["name"])."\\\", ref=self, owner=\\\"".$note."\\\"}) end)";
+			$script = $script."\n
+				function onLoad()
+					self.addContextMenuItem('Get Token(s)', porter)
+				end
+				
+				function porter(player_color)
+					importer = getObjectFromGUID('".$GUID."') 
+					importer.call('selftoken', {name=\\\"".addslashes($card["name"])."\\\", ref=self, owner=player_color})
+				end";
 		}
 
 		$description =  $description."\n".$card["setCode"].':'.$card["number"];

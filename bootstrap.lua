@@ -169,10 +169,11 @@ function spawncard(text)
 
 end
 
---gets single token information by original card name.
+--gets related token information by original card name.
 
 function selftoken(table)
-	printToAll(table.owner..' spawns token(s) from '..table.name)
+	sn = Player[table.owner].steam_name
+	printToAll(sn..' spawns token(s) from '..table.name)
 	local tpos = table.ref.getPosition()
 	local trot = table.ref.getRotation()
 	if trot.y >= 55 and trot.y < 145 then
@@ -184,7 +185,7 @@ function selftoken(table)
 	elseif trot.y >= 325 or trot.y < 55 then
 		tpos.z= tpos.z - 3.18
 	end
-	parseMessage("s token "..table.name, {x=tpos.x, y=tpos.y, z=tpos.z}, {x=trot.x, y=trot.y, z=0}, table.owner)
+	parseMessage("s token "..table.name, {x=tpos.x, y=tpos.y, z=tpos.z}, {x=trot.x, y=trot.y, z=0}, sn)
 end
 
 function gettoken(url)
