@@ -125,7 +125,7 @@ function fuzzyget($variant, $condition = null){
 		$cvar = $variant;
 		$cvar["facename"] = "yes";
 		$card = getcard($cvar);
-		
+
 		if(count($card) > 0){
 			return $card;
 		} 
@@ -134,7 +134,7 @@ function fuzzyget($variant, $condition = null){
 		$cvar = $variant;
 		$cvar["fuzzy"] = "yes";
 		$card = getcard($cvar);
-		
+
 		if(count($card) > 0){
 			return $card;
 		}
@@ -157,7 +157,7 @@ function fuzzyget($variant, $condition = null){
 		$cvar = $variant;
 		$cvar["facename"] = "yes";
 		$card = getcard($cvar);
-		
+
 		if(count($card) > 0){
 			return $card;
 		} 
@@ -166,7 +166,7 @@ function fuzzyget($variant, $condition = null){
 		$cvar = $variant;
 		$cvar["fuzzy"] = "yes";
 		$card = getcard($cvar);
-		
+
 		if(count($card) > 0){
 			return $card;
 		}
@@ -507,7 +507,7 @@ function printJSON($cardlist, $aback = null, $aface = null, $apos = null, $arot 
 					$othercard = getother($otherface);
 
 					$description = $description."\n// ".$othercard["type"]."\n";
-						
+
 					if(isset($othercard["manaCost"])){
 						if($othercard["manaCost"] <> ""){
 							$description = $description.$othercard["manaCost"]."\n";
@@ -515,15 +515,15 @@ function printJSON($cardlist, $aback = null, $aface = null, $apos = null, $arot 
 					}
 
 					$description = $description."\n";
-					
+
 					if(isset($othercard["text"])){
 						$description = $description.$othercard["text"]."\n";
 					}
-					
+
 					if(isset($othercard["power"])){
 						$description = $description."\n".$othercard["power"]."/".$othercard["toughness"]."\n";	
 					}
-				
+
 					if(isset($othercard["loyalty"])){
 						$description = $description."\n".$othercard["loyalty"]." Loyalty\n";
 					}
@@ -532,15 +532,21 @@ function printJSON($cardlist, $aback = null, $aface = null, $apos = null, $arot 
 		}
 
 		if(isset($card["relatedCards"]) and !isset($card["isToken"])){
+			$facefortokens = "";
+			if(isset($card["faceName"])){
+				$facefortokens = $card["faceName"];
+				} else {
+				$facefortokens = $card["name"];
+			}
 			$script = $script."\n
 				function onLoad()
 					self.addContextMenuItem('Get Token(s)', porter)
-				end
-				
-				function porter(player_color)
-					importer = getObjectFromGUID('".$GUID."') 
-					importer.call('selftoken', {name=\\\"".addslashes($card["name"])."\\\", ref=self, owner=player_color})
-				end";
+					end
+
+					function porter(player_color)
+						importer = getObjectFromGUID('".$GUID."') 
+						importer.call('selftoken', {name=\\\"".addslashes($facefortokens)."\\\", ref=self, owner=player_color})
+						end";
 		}
 
 		$description =  $description."\n".$card["setCode"].':'.$card["number"];
@@ -568,8 +574,11 @@ function printJSON($cardlist, $aback = null, $aface = null, $apos = null, $arot 
 		$gm = addslashes($gm);
 
 		if($card["otherFaceIds"] != null and ($card["layout"] == "transform" or $card["layout"] == "modal_dfc" or $card["layout"] == "reversible_card" or $card["layout"] == "meld" or $card["layout"] == "double_faced_token" or $card["layout"] == "art_series")){
+			
+			$othercard = getother($card["otherFaceIds"]);
+				
 			if($card["layout"] == "meld"){
-				$meldface = getother($card["otherFaceIds"])["uuid"];
+				$meldface = $othercard["uuid"];
 				$dfcback = getimagebyuuid($meldface);
 			} else {
 				$tokenback = array();
@@ -579,6 +588,22 @@ function printJSON($cardlist, $aback = null, $aface = null, $apos = null, $arot 
 				$tokenback["back"] = "yes";
 				$dfcback = getimagebyuuid($card["uuid"], $tokenback);
 			}
+
+			$backscript = "";
+		
+			if(isset($othercard["relatedCards"]) and !isset($othercard["isToken"])){
+				$backscript = $backscript."\n
+					function onLoad()
+						self.addContextMenuItem('Get Token(s)', porter)
+						end
+
+						function porter(player_color)
+							importer = getObjectFromGUID('".$GUID."') 
+							importer.call('selftoken', {name=\\\"".addslashes($othercard["faceName"])."\\\", ref=self, owner=player_color})
+							end";
+			}
+
+
 			echo '{
 			"Name": "Card",
 				"Transform": {
@@ -676,7 +701,7 @@ function printJSON($cardlist, $aback = null, $aface = null, $apos = null, $arot 
 				"Type": 0
 		}
 		},
-			"LuaScript": "',$script."\nfunction onObjectEnterZone(zone, object) if object == self then object.setState(1) end end",'",
+			"LuaScript": "',$backscript."\nfunction onObjectEnterZone(zone, object) if object == self then object.setState(1) end end",'",
 			"LuaScriptState": "",
 			"XmlUI": "",
 			"GUID": "947dc9"
