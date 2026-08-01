@@ -30,7 +30,7 @@ function gettokens($cnd){
 		die("Connection failed: " . $conn->connect_error);
 	}
 
-	$sql = "select * from tokens where (tokens.relatedcards like '%".$cnd["name"]."%' or tokens.name like '%".$cnd["name"]."%') and (tokens.side like 'a' or tokens.side is null)";
+	$sql = "select * from tokens where (tokens.relatedcards like '%\"".$conn->escape_string($cnd["name"])."\"%' or tokens.name like '%".$conn->escape_string($cnd["name"])."%') and (tokens.side like 'a' or tokens.side is null)";
 
 	if($cnd["sql"]=="yes"){
 		echo $sql;
@@ -56,6 +56,26 @@ function gettokens($cnd){
 		}
 		return array($F2F);
 	}
+
+}
+
+//Checks if an exact name has related tokens. Takes full card names or face names (for stuff like meld that doesn't play nice) as a string, returns a boolean.
+function hastokens($name){
+
+	$conn = new mysqli(SERVERNAME, USERNAME, PASSWORD, DBNAME);
+	if ($conn->connect_error) {
+		die("Connection failed: " . $conn->connect_error);
+	}
+
+	$sql = "select * from tokens where tokens.relatedcards like '%\"".$conn->escape_string($name)."\"%'";
+
+	if($cnd["sql"]=="yes"){
+		echo $sql;
+	}
+
+	$result = $conn->query($sql);
+
+	return($result->num_rows>0);
 
 }
 
@@ -455,6 +475,7 @@ function printJSON($cardlist, $aback = null, $aface = null, $apos = null, $arot 
 
 	foreach($cardlist as $card){
 
+
 		$description = null;
 
 		$dfctext = null;
@@ -531,13 +552,22 @@ function printJSON($cardlist, $aback = null, $aface = null, $apos = null, $arot 
 			}
 		}
 
-		if(isset($card["relatedCards"]) and !isset($card["isToken"])){
-			$facefortokens = "";
-			if(isset($card["faceName"])){
-				$facefortokens = $card["faceName"];
-				} else {
-				$facefortokens = $card["name"];
+		//if card has any tokens adds the token script.
+		$hasfulltoken = hastokens($card["name"]);
+		$hasfacetoken = FALSE;
+		if(isset($card["faceName"])){
+			$hasfacetoken = hastokens($card["faceName"]);
+		}
+
+		if($hasfulltoken or $hasfacetoken){
+
+			$fronttokenname = "";
+			if($hasfacetoken){
+				$fronttokenname = $card["faceName"];
+			} else {
+				$fronttokenname = $card["name"];
 			}
+
 			$script = $script."\n
 				function onLoad()
 					self.addContextMenuItem('Get Token(s)', porter)
@@ -545,7 +575,7 @@ function printJSON($cardlist, $aback = null, $aface = null, $apos = null, $arot 
 
 					function porter(player_color)
 						importer = getObjectFromGUID('".$GUID."') 
-						importer.call('selftoken', {name=\\\"".addslashes($facefortokens)."\\\", ref=self, owner=player_color})
+						importer.call('selftoken', {name=\\\"".addslashes($fronttokenname)."\\\", ref=self, owner=player_color})
 						end";
 		}
 
@@ -574,9 +604,9 @@ function printJSON($cardlist, $aback = null, $aface = null, $apos = null, $arot 
 		$gm = addslashes($gm);
 
 		if($card["otherFaceIds"] != null and ($card["layout"] == "transform" or $card["layout"] == "modal_dfc" or $card["layout"] == "reversible_card" or $card["layout"] == "meld" or $card["layout"] == "double_faced_token" or $card["layout"] == "art_series")){
-			
+
 			$othercard = getother($card["otherFaceIds"]);
-				
+
 			if($card["layout"] == "meld"){
 				$meldface = $othercard["uuid"];
 				$dfcback = getimagebyuuid($meldface);
@@ -590,8 +620,20 @@ function printJSON($cardlist, $aback = null, $aface = null, $apos = null, $arot 
 			}
 
 			$backscript = "";
-		
-			if(isset($othercard["relatedCards"]) and !isset($othercard["isToken"])){
+
+			//determines token generation name for card backs. Matters for meld cards.
+			$hasfulltoken = hastokens($othercard["name"]);
+			$hasfacetoken = hastokens($othercard["faceName"]);
+			if($hasfulltoken or $hasfacetoken){
+
+				$backtokenname = "";
+				if($hasfacetoken){
+					$backtokenname = $othercard["faceName"];
+				} else {
+					$backtokenname = $othercard["name"];
+				}
+
+
 				$backscript = $backscript."\n
 					function onLoad()
 						self.addContextMenuItem('Get Token(s)', porter)
@@ -599,7 +641,7 @@ function printJSON($cardlist, $aback = null, $aface = null, $apos = null, $arot 
 
 						function porter(player_color)
 							importer = getObjectFromGUID('".$GUID."') 
-							importer.call('selftoken', {name=\\\"".addslashes($othercard["faceName"])."\\\", ref=self, owner=player_color})
+							importer.call('selftoken', {name=\\\"".addslashes($backtokenname)."\\\", ref=self, owner=player_color})
 							end";
 			}
 
