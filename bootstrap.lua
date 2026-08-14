@@ -272,6 +272,25 @@ function decktranslate(a)
 
 end
 
+--Decksite to json
+
+function deckjson(a)
+
+	--assume the link is to the deck's page if it's not just a text file.
+
+	a = a:gsub('#.*', '')
+
+	if a:match('scryfall.com') and not a:match('/export/text') then
+		a = a:gsub('?.*', '')
+		a = a:gsub('.*/decks/','https://api.scryfall.com/decks/').."/export/json&scryfall=yes"
+		return a
+	end
+
+	--if it wasn't a supported deck site, probably just straight JSON in the right format.
+	return a
+
+end
+
 --Deck uploadbyuuid
 
 function uploadbyuuid(request, player)
@@ -399,6 +418,9 @@ function parseMessage(msg, position, rotation, owner)
 		--matches section after deck verb
 		local deck=string.match(request, "^[Dd]eck (.*)")
 
+		--matches section after JSON verb
+		local upload=string.match(request, "^[Jj][Ss][Oo][Nn] (.*)")
+		
 		--matches section after upload verb
 		local upload=string.match(request, "^[Uu]pload (.*)")
 
@@ -439,8 +461,8 @@ function parseMessage(msg, position, rotation, owner)
 				"s card teysa",
 				"s token teysa",
 				"s token spirit",
-				"s deck https://tappedout.net/mtg-decks/tts-importer-test/",
 				"s deck https://scryfall.com/@giantweevil/decks/4c651538-39ff-48b2-af31-cabce54551b5",
+				"s json https://scryfall.com/@giantweevil/decks/4c651538-39ff-48b2-af31-cabce54551b5",
 				"s deck mirror mastery",
 				"s scale 2",
 				"s jmp",
@@ -494,6 +516,10 @@ function parseMessage(msg, position, rotation, owner)
 
 			getpack(site..tp().."precon/?search="..deck..exargs)
 
+		elseif string.match(request, "^[Jj][Ss][Oo][Nn]") and url then
+
+			getdeck(site..tp()..'getdeck/?url='..deckjson(url)..exargs)
+			
 			--Token cards (and cards in token db)
 
 		elseif string.match(request, "^[Tt]oken") and token then

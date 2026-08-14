@@ -201,6 +201,31 @@ function fuzzyget($variant, $condition = null){
 
 }
 
+function sid2uuid($sid){
+	//converts a scryfall ID to a MTGJSON UUID (string to string)
+		
+	$conn = new mysqli(SERVERNAME, USERNAME, PASSWORD, DBNAME);
+	if ($conn->connect_error) {
+		die("Connection failed: " . $conn->connect_error);
+	}
+
+	$sql = "select uuid from cardIdentifiers where cardIdentifiers.scryfallId = \"".$conn->escape_string($sid)."\";";
+
+	$result = $conn->query($sql);
+
+	if (is_object($result)){
+
+		if ($result->num_rows > 0){
+
+			$card = $result->fetch_array();
+			$conn->close();
+			return $card["uuid"];
+		}
+	}
+	$conn->close();
+	return "Could not map SID to UUID";
+}
+
 function getcard($cnd){
 
 	//gets an array of cards based on the conditions provided
