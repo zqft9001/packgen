@@ -262,6 +262,7 @@ function decktranslate(a)
 	end
 
 	if a:match('scryfall.com') and not a:match('/export/text') then
+		a = a:gsub('?.*', '')
 		a = a:gsub('.*/decks/','https://api.scryfall.com/decks/').."/export/text"
 		return a
 	end
