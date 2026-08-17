@@ -350,7 +350,7 @@ end
 function backcheck(imageurl)
 	local returnurl = imageurl
 	imageurl = imageurl:lower()
-	if imageurl:match('.jpg') or imageurl:match('.png') or imageurl:match('.webm') or imageurl:match('.mp4') or imageurl:match('.m4v') or imageurl:match('.mov') or imageurl:match('.rawt') or imageurl:match('.unity3d') then
+	if imageurl:match('.jpg') or imageurl:match('.png') or imageurl:match('.webm') or imageurl:match('.webp') or imageurl:match('.mp4') or imageurl:match('.m4v') or imageurl:match('.mov') or imageurl:match('.rawt') or imageurl:match('.unity3d') then
 		return returnurl
 	else
 		return nil
