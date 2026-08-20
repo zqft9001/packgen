@@ -16,7 +16,7 @@ header('Content-type: text/plain');
 $ch = curl_init($gclean["url"]);
 curl_setopt($ch, CURLOPT_HEADER, 0);
 curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
-curl_setopt($ch, CURLOPT_USERAGENT, "GiantweevilProxyWorker/1.0");
+curl_setopt($ch, CURLOPT_USERAGENT, "GiantweevilDecklistWorker/1.0");
 
 $out = curl_exec($ch);
 
