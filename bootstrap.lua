@@ -4,36 +4,48 @@ mod_name="Giantweevil's Importer"
 version=0.4
 self.setName(mod_name..' '..version)
 
-site="https://giantweevil.net/"
+site=self.getDescription()
+self.setDescription("")
 
 self.interactable = false
 
 helptext = [[
-[FF0000]Read this![FFFFFF]
-[32a8a2][b]S [keyrune code][/b][FFFFFF] - makes a pack with default settings based on the code provided.
-[32a8a2][b]S [scryfall/gatherer card url][/b][FFFFFF] - makes the exact printing provided in the url.
-[32a8a2][b]S Pack [keyrune code][/b][FFFFFF] - generates a pack by keyrune, or random if one provided
-[32a8a2][b]S Card [image url] [cardname][/b][FFFFFF] - makes a card of the given name, with the image as the face.
-[32a8a2][b]S Card [cardname][/b][FFFFFF] - makes all printings of the given name.
-[32a8a2][b]S Token [cardname][/b][FFFFFF] - returns all tokens related to the cardname. Returns fuzzy search on partial names.
-[32a8a2][b]S Set [keyrune code][/b][FFFFFF] - returns all cards printed in the set, minus basic lands
-[32a8a2][b]S Help Deck[/b][FFFFFF] - Prints deck import help
-[32a8a2][b]S Help Custom[/b][FFFFFF] - Prints back/scale help]]
+[dc322f][b]S Deck [deck url][/b][FFFFFF] - spawns a deck based on the given url. Autotranslates some links, other links need to be text format.
+[dc322f][b]S JSON [deck url][/b][FFFFFF] - spawns a deck based on the given url, preserves printings. Autotranslates Scryfall links, other links are WIP.
+[dc322f][b]S Decklist[/b][FFFFFF] - spawns a deck based on your color's notebook page. Accepts most text formats.
+
+[6c71c4][b]S [JMP, J22, J25, or TLE][/b][FFFFFF] - spawns a jumpstart deck (2 packs) based on the code provided.
+[6c71c4][b]S Card [cardname][/b][FFFFFF] - spawns all printings of the given name. Fuzzy search on partial matches.
+[6c71c4][b]S Token [cardname][/b][FFFFFF] - spawns all tokens related to the name. Fuzzy search on partial matches.
+
+[d33682][b]S Help Deck[/b][FFFFFF] - Prints deck import help
+[d33682][b]S Help Custom[/b][FFFFFF] - Prints back/scale/specific printing help]]
 
 helpdeck = [[
-[FF0000]Read this![FFFFFF]
-[32a8a2][b]S Deck [deck url][/b][FFFFFF] - creates a deck based on the given url. Autotranslates tappedout links, other links need to be text format.
-[32a8a2][b]S Deck [deck name][/b][FFFFFF] - spawns a preconstructed deck.
-[32a8a2][b]S Search [deck name][/b][FFFFFF] - finds preconstructed and user added decks.
-[32a8a2][b]S Upload [deck url] [deck name][/b][FFFFFF] - uploads a deck from the url with the given name. Follows same rules as deck import for formatting.
-[32a8a2][b]S Upload [deck name][/b][FFFFFF] - uploads all currently highlighted cards as a deck with the given name. Preserves printings.
-[32a8a2][b]S Delete [deck name][/b][FFFFFF] - deletes a user-added deck.]]
+[dc322f][b]S Deck [deck url][/b][FFFFFF] - spawns a deck based on the given url. Autotranslates some links, other links need to be text format.
+[dc322f][b]S Deck [deck name][/b][FFFFFF] - spawns a preconstructed or user added deck. Randomizes on multiple results.
+
+[dc322f][b]S Decklist[/b][FFFFFF] - spawns a deck based on your color's notebook page. Accepts most formats.
+[dc322f][b]S Decklist [newline separated decklist][/b][FFFFFF] - spawns a deck based on the pasted decklist. Accepts most formats, only accepts about 11 lines.
+
+[dc322f][b]S Search [deck name][/b][FFFFFF] - searches preconstructed and user added decks.
+[dc322f][b]S Upload [deck url] [deck name][/b][FFFFFF] - uploads a deck from the url with the given name. Follows same rules as deck import for formatting.
+[dc322f][b]S Upload [deck name][/b][FFFFFF] - uploads all currently highlighted cards as a deck with the given name. Preserves printings.
+[dc322f][b]S Delete [deck name][/b][FFFFFF] - deletes a user-added deck.]]
 
 helpcustom = [[
-[32a8a2][b]S Back [image url][/b][FFFFFF] - sets the per-player cardback to [image url]. use without a url to reset to default.
-[32a8a2][b]S GLOBALBACK [image url][/b][FFFFFF] - sets the global cardback to [image url]. use without a url to reset to default.
-[32a8a2][b]S Scale [number][/b][FFFFFF] - sets the per-player scale to [number]. use without a number to reset to default
-[32a8a2][b]S GLOBALSCALE [number][/b][FFFFFF] - sets the global scale to [number]. use without a number to reset to default.]]
+[d33682][b]S Back [image url][/b][FFFFFF] - sets the per-player cardback to [image url]. use without a url to reset to default.
+[d33682][b]S GLOBALBACK [image url][/b][FFFFFF] - sets the global cardback to [image url]. use without a url to reset to default.
+
+[d33682][b]S Scale [number][/b][FFFFFF] - sets the per-player scale to [number]. use without a number to reset to default
+[d33682][b]S GLOBALSCALE [number][/b][FFFFFF] - sets the global scale to [number]. use without a number to reset to default.
+
+[d33682][b]S [scryfall card url][/b][FFFFFF] - spawns the exact printing provided in the url.
+[d33682][b]S Card [scryfall card url][/b][FFFFFF] - spwans the exact printing provided in the url.
+[d33682][b]S Card [image url][/b][FFFFFF] - spawns an island with the image as the face.
+[d33682][b]S Card [image url] [cardname][/b][FFFFFF] - spawns a card of the given name with the image as the face.
+
+[d33682][b]S Set [keyrune code][/b][FFFFFF] - spawns all cards printed in the set, minus basic lands.]]
 
 
 function onScriptingButtonDown(index, color)
