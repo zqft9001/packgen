@@ -69,10 +69,6 @@ function hastokens($name){
 
 	$sql = "select * from tokens where tokens.relatedcards like '%\"".$conn->escape_string($name)."\"%'";
 
-	if($cnd["sql"]=="yes"){
-		echo $sql;
-	}
-
 	$result = $conn->query($sql);
 
 	return($result->num_rows>0);
@@ -270,12 +266,14 @@ function getcard($cnd){
 	//Name Searches
 	if(isset($cnd["name"])){
 
+		$cleanname = $conn->escape_string($cnd["name"]);
+
 		if(isset($cnd["facename"])){
-			$sql = "select * from cards where cards.facename like \"".$cnd["name"]."\" ".$bannedsets.$set.$cn.$filterend;
+			$sql = "select * from cards where cards.facename like \"".$cleanname."\" ".$bannedsets.$set.$cn.$filterend;
 		}elseif(isset($cnd["fuzzy"])){
-			$sql = "select * from cards where cards.name like \"%".$cnd["name"]."%\" ".$bannedsets.$set.$cn.$filterend;
+			$sql = "select * from cards where cards.name like \"%".$cleanname."%\" ".$bannedsets.$set.$cn.$filterend;
 		} else {
-			$sql = "select * from cards where cards.name = \"".$cnd["name"]."\" ".$bannedsets.$set.$cn.$filterend;
+			$sql = "select * from cards where cards.name = \"".$cleanname."\" ".$bannedsets.$set.$cn.$filterend;
 		}
 	}
 
