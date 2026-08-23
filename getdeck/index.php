@@ -12,15 +12,20 @@ include('../cardfunctions.php');
 //makes the file output as plain text instead of html
 header('Content-type: text/plain');
 
+$out = "";
 
-$ch = curl_init($gclean["url"]);
-curl_setopt($ch, CURLOPT_HEADER, 0);
-curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
-curl_setopt($ch, CURLOPT_USERAGENT, "GiantweevilDecklistWorker/1.0");
+if(isset($gclean["url"])){
+	$ch = curl_init($gclean["url"]);
+	curl_setopt($ch, CURLOPT_HEADER, 0);
+	curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
+	curl_setopt($ch, CURLOPT_USERAGENT, "GiantweevilDecklistWorker/1.0");
 
-$out = curl_exec($ch);
+	$out = curl_exec($ch);
 
-curl_close($ch);
+	curl_close($ch);
+} elseif(isset($pclean["decklist"])){
+	$out = $pclean["decklist"];
+}
 
 if(preg_match("<!DOCTYPE html>", $out)){
 	echo "Got website instead of text response";

@@ -22,10 +22,19 @@ $pclean = null;
 $pclean = file_get_contents( 'php://input', 'r' );
 $pclean = json_decode($pclean, true);
 
-
 $ipos = null;
 $irot = null;
 $iscl = null;
+
+//exargs handling for put requests
+if(isset($pclean["exargs"])){
+	$tempargs = explode("&", $pclean["exargs"]);
+
+	foreach($tempargs as $temparg){
+		$arg = explode("=", $temparg);
+		$gclean[$arg[0]] = $arg[1];
+	}
+}
 
 if(isset($gclean["pos"])){
 

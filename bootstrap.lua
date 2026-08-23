@@ -390,11 +390,11 @@ function onChat(msg,player)
 	end
 	local rotation = {x=0, y=py, z=180}
 
-	parseMessage(msg, position, rotation, owner)
+	parseMessage(msg, position, rotation, owner, player)
 
 end
 
-function parseMessage(msg, position, rotation, owner)
+function parseMessage(msg, position, rotation, owner, player)
 
 	if msg:match('[Ss] (.*)') then
 
@@ -414,6 +414,9 @@ function parseMessage(msg, position, rotation, owner)
 
 		--matches section after pack verb
 		local pack=string.match(request, "^[Pp]ack (.*)")
+
+		--matches section after decklist verb
+		local decklist=string.match(request, "^[Dd]ecklist (.*)")
 
 		--matches section after deck verb
 		local deck=string.match(request, "^[Dd]eck (.*)")
@@ -505,6 +508,22 @@ function parseMessage(msg, position, rotation, owner)
 		elseif string.match(request, "^[Uu]pload") and upload then
 
 			uploadbyuuid(upload, player)
+			
+			--spawn deck by list
+
+		elseif string.match(request, "^[Dd]ecklist") and decklist then	
+
+			WebRequest.put(site..tp()..'getdeck/', JSON.encode({decklist = decklist, exargs = exargs}), function(a) spawndeck(a.text) end)
+
+		elseif string.match(request, "^[Dd]ecklist") then
+
+			for _, notebook in pairs(Notes.getNotebookTabs()) do
+    				if notebook.title == player.color then
+					decklist = notebook.body
+    				end
+  			end
+
+			WebRequest.put(site..tp()..'getdeck/', JSON.encode({decklist = decklist, exargs = exargs}), function(a) spawndeck(a.text) end)
 
 			--Spawn deck by URL or name
 
