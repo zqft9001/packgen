@@ -219,7 +219,7 @@ function sid2uuid($sid){
 		}
 	}
 	$conn->close();
-	return "Could not map SID to UUID";
+	return "Could not map SID ".$sid." to UUID";
 }
 
 function getcard($cnd){
