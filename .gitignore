@@ -2,3 +2,4 @@ db_defs.php
 precon/json/*
 !precon/json/index.php
 cachedefs.php
+moxapi.php
