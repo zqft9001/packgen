@@ -5,7 +5,6 @@ version=0.4
 self.setName(mod_name..' '..version)
 
 site=self.getDescription()
-self.setDescription("")
 
 self.interactable = false
 
