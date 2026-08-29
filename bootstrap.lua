@@ -1,10 +1,11 @@
 --Vars
 
-mod_name="Giantweevil's Importer"
-version=0.4
+mod_name = "Giantweevil's Importer"
+version = 0.5
 self.setName(mod_name..' '..version)
 
-site=self.getDescription()
+site = self.getDescription()
+testing = false
 
 self.interactable = false
 
@@ -25,7 +26,6 @@ helpdeck = [[
 [dc322f][b]S Deck [deck name][/b][FFFFFF] - spawns a preconstructed or user added deck. Randomizes on multiple results.
 
 [dc322f][b]S Decklist[/b][FFFFFF] - spawns a deck based on your color's notebook page. Accepts most formats.
-[dc322f][b]S Decklist [newline separated decklist][/b][FFFFFF] - spawns a deck based on the pasted decklist. Accepts most formats, only accepts about 11 lines.
 
 [dc322f][b]S Search [deck name][/b][FFFFFF] - searches preconstructed and user added decks.
 [dc322f][b]S Upload [deck url] [deck name][/b][FFFFFF] - uploads a deck from the url with the given name. Follows same rules as deck import for formatting.
@@ -59,7 +59,7 @@ end
 
 --testing or prod site based on self Description
 function tp()
-	if self.getDescription() == "test" then
+	if testing == true then
 		return "t/"
 	else
 		return "p/"
@@ -67,14 +67,14 @@ function tp()
 end
 
 function settesting()
-	if self.getDescription() ~= "test" then
-		self.setDescription("test")
+	if testing == false then
+		testing = true
 		self.setColorTint("Black")
 		self.addContextMenuItem("Post Test", function() posttest() end)
 		self.addContextMenuItem("Put Test", function() puttest() end)
 		self.addContextMenuItem("Get Text", function() gettest() end)
 	else
-		self.setDescription("")
+		testing = false
 		self.setColorTint({226/255, 177/255, 89/255})
 		self.clearContextMenu()
 		self.addContextMenuItem("Toggle Testing", function() settesting() end)
@@ -105,11 +105,12 @@ end
 backurl = {}
 globalback = nil
 
-function back(owner)
+--back by steam name
+function back(sn)
 	if globalback ~= nil then
 		return "&back="..globalback
-	elseif backurl[owner] ~= nil then
-		return "&back="..backurl[owner]
+	elseif backurl[sn] ~= nil then
+		return "&back="..backurl[sn]
 	else
 		return ""
 	end
@@ -119,11 +120,12 @@ end
 pscale = {}
 globalscale = nil
 
-function cardscale(owner)
+--scale by steam name
+function cardscale(sn)
 	if globalscale ~= nil then
 		return setscl(globalscale)
-	elseif pscale[owner] ~= nil then
-		return setscl(pscale[owner])
+	elseif pscale[sn] ~= nil then
+		return setscl(pscale[sn])
 	else
 		return ""
 	end
@@ -160,31 +162,43 @@ function setscl(scl)
 	return ""
 end
 
---Gets single card information by name. Random printToAlling.
-function getcard(args)
-	Wait.time(function()printToAll("Spawning object(s), please wait.")end, 0.5)
-	local url = site..tp()..'ttscard/?'..args
+--Sends get request to website for object(s)
+function getcard(url, objecttype, player)
+	objecttype = objecttype or "object(s)"
+
 	log(url)
-	WebRequest.get(url, function(a) spawncard(a.text) end)
+	WebRequest.get(url, function(a) spawncard(a.text, objecttype, player) end)
 end
 
---Spawns a card from JSON
-function spawncard(text)
+--Spawns from @ separated JSON
+function spawncard(text, objecttype, player)
+	
+	--if objecttype is unspecified, be vague
+	objecttype = objecttype or "object(s)"
+
 	if (text == "") or (text == nil) then
-		Wait.time(function()printToAll("unable to spawn object(s), no return from site")end, 0.5)
+		Wait.time(function()printToAll("unable to spawn "..objecttype..", no return from site")end, 0.5)
 		return
 	end
+	
+	--if it's not probably JSON, return whatever text error the website gave
+	if not string.match(text, "{") then
+		Wait.time(function()printToAll(text)end, 0.5)
+		return
+	end
+	
+	--spawn @ separated JSON
 	for i in string.gmatch(text, "([^@]+)") do
 		spawnObjectJSON({json=i})
 	end
+	
+	printToAll("["..Color.fromString(player.color):toHex(false).."]"..player.steam_name.."[FFFFFF] spawned "..objecttype)
 
 end
 
---gets related token information by original card name.
+--gets related tokens by original card name
 
 function selftoken(table)
-	sn = Player[table.owner].steam_name
-	printToAll(sn..' spawns token(s) from '..table.name)
 	local tpos = table.ref.getPosition()
 	local trot = table.ref.getRotation()
 	if trot.y >= 55 and trot.y < 145 then
@@ -196,53 +210,10 @@ function selftoken(table)
 	elseif trot.y >= 325 or trot.y < 55 then
 		tpos.z= tpos.z - 3.18
 	end
-	parseMessage("s token "..table.name, {x=tpos.x, y=tpos.y, z=tpos.z}, {x=trot.x, y=trot.y, z=0}, sn)
+	parseMessage("s token "..table.name, {x=tpos.x, y=tpos.y, z=tpos.z}, {x=trot.x, y=trot.y, z=0}, Player[table.owner])
 end
 
-function gettoken(url)
-	Wait.time(function()printToAll("Spawning object(s), please wait.")end, 0.5)
-	log(url)
-	WebRequest.get(url, function(a) spawncard(a.text) end)
-end
 
---Gets a pack by URL.
-function getpack(url)
-	Wait.time(function()printToAll("Spawning object(s), please wait.")end, 0.5)
-	log(url)
-	WebRequest.get(url, function(a) spawnpack(a.text) end)
-end
-
---Spawns a pack from card JSONs, @ separated
-function spawnpack(text)
-	if (text == "") or (text == nil) then
-		Wait.time(function()printToAll("unable to spawn object(s), no return from site")end, 0.5)
-		return
-	end
-	for i in string.gmatch(text, "([^@]+)") do
-		spawnObjectJSON({json=i})
-	end
-end
-
---Gets a deck by URL
-function getdeck(url)
-	Wait.time(function()printToAll("Spawning deck, please wait.")end, 0.5)
-	log(url)
-	WebRequest.get(url, function(a) spawndeck(a.text) end)
-end
-
-function spawndeck(text)
-	if (text == "") or (text == nil) then
-		Wait.time(function()printToAll("unable to spawn object(s), no return from site")end, 0.5)
-		return
-	end
-	if string.match(text, "(Invalid Format)") then
-		printToAll("Deck in invalid format.")
-		return
-	end
-	for i in string.gmatch(text, "([^@]+)") do
-		spawnObjectJSON({json=i})
-	end
-end
 
 --Decksite to text file
 function decktranslate(a)
@@ -279,25 +250,6 @@ function decktranslate(a)
 	end
 
 	--if it wasn't a supported deck site, probably just a text file.
-	return a
-
-end
-
---Decksite to json
-
-function deckjson(a)
-
-	--assume the link is to the deck's page if it's not just a text file.
-
-	a = a:gsub('#.*', '')
-
-	if a:match('scryfall.com') and not a:match('/export/text') then
-		a = a:gsub('?.*', '')
-		a = a:gsub('.*/decks/','https://api.scryfall.com/decks/').."/export/json&scryfall=yes"
-		return a
-	end
-
-	--if it wasn't a supported deck site, probably just straight JSON in the right format.
 	return a
 
 end
@@ -374,15 +326,10 @@ end
 
 function onLoad()
 	printToAll(helptext)
-	self.setDescription("")
 	self.setColorTint({226/255, 177/255, 89/255})
 end
 
 function onChat(msg,player)
-
-	--set owner
-
-	local owner =  player.steam_name
 
 	--pointer position is grabbed here to prevent decks spawning in multiple positions
 
@@ -401,11 +348,11 @@ function onChat(msg,player)
 	end
 	local rotation = {x=0, y=py, z=180}
 
-	parseMessage(msg, position, rotation, owner, player)
+	parseMessage(msg, position, rotation, player)
 
 end
 
-function parseMessage(msg, position, rotation, owner, player)
+function parseMessage(msg, position, rotation, player)
 
 	if msg:match('[Ss] (.*)') then
 
@@ -414,42 +361,12 @@ function parseMessage(msg, position, rotation, owner, player)
 		--matches URls
 		local url=request:match('(http%S+)')
 
-		--matches the section after the card verb
-		local card=request:match('[Cc]ard (.*)')
-
-		--matches the section after the set verb
-		local set=request:match('[Ss]et (.*)')
-
-		--matches the secion after the token verb
-		local token=request:match('[Tt]oken (.*)')
-
-		--matches section after pack verb
-		local pack=string.match(request, "^[Pp]ack (.*)")
-
-		--matches section after decklist verb
-		local decklist=string.match(request, "^[Dd]ecklist (.*)")
-
-		--matches section after deck verb
-		local deck=string.match(request, "^[Dd]eck (.*)")
-
-		--matches section after JSON verb
-		local upload=string.match(request, "^[Jj][Ss][Oo][Nn] (.*)")
-		
-		--matches section after upload verb
-		local upload=string.match(request, "^[Uu]pload (.*)")
-
-		--matches section after delete verb
-		local delete=string.match(request, "^[Dd]elete (.*)")
-
-		--matches section after search verb
-		local search=string.match(request, "^[Ss]earch (.*)")
-
-		--matches number after scale verbs
+		--matches number after scale verbs (used by global and player-specific)
 		local scale=string.match(request, "[Ss][Cc][Aa][Ll][Ee] (.*)")
-
+		
 		--Bake args
 
-		local exargs = back(owner)..setpos(position)..setrot(rotation)..cardscale(owner)..note(owner).."&GUID="..self.guid
+		local exargs = back(player.steam_name)..setpos(position)..setrot(rotation)..cardscale(player.steam_name)..note(player.steam_name).."&GUID="..self.guid
 
 		--help commands
 
@@ -493,40 +410,52 @@ function parseMessage(msg, position, rotation, owner, player)
 
 			for _,tmsg in ipairs(teststrings) do
 				Wait.time(function()printToAll(tmsg)end, 0.5)
-				parseMessage(tmsg, testposition, rotation, owner)
+				parseMessage(tmsg, testposition, rotation, player)
 				testposition.x = testposition.x+5
 			end
 
-			--delete deck from importer site
+			
+		--delete deck from importer site
 
-		elseif string.match(request, "^[Dd]elete") and delete then
+		elseif string.match(request, "^[Dd]elete") then
+		
+			--matches section after delete verb
+			local delete=string.match(request, "^[Dd]elete (.*)")
 
 			deletebyname(delete)
 
-			--search for deck on importer site
+		
+		--search for deck on importer site
 
-		elseif string.match(request, "^[Ss]earch") and search then
+		elseif string.match(request, "^[Ss]earch") then
+		
+			--matches section after search verb
+			local search=string.match(request, "^[Ss]earch (.*)")
 
 			searchbyname(search)
 
-			--Upload deck to importer site
+		
+		--Upload deck to importer site
 
-		elseif string.match(request, "^[Uu]pload") and upload and url then
+		elseif string.match(request, "^[Uu]pload") and url then
 
-			local upload = string.match(upload, "http%S+ (.*)")
+			--matches section after upload verb and url
+			local upload = string.match(request, "^[Uu]pload http%S+ (.*)")
 			uploadbyurl(url, upload)
 
-		elseif string.match(request, "^[Uu]pload") and upload then
+		elseif string.match(request, "^[Uu]pload") then
+			
+			--matches section after upload verb
+			local upload=string.match(request, "^[Uu]pload (.*)")
 
 			uploadbyuuid(upload, player)
 			
-			--spawn deck by list
-
-		elseif string.match(request, "^[Dd]ecklist") and decklist then	
-
-			WebRequest.put(site..tp()..'getdeck/', JSON.encode({decklist = decklist, exargs = exargs}), function(a) spawndeck(a.text) end)
+		
+		--spawn deck by list
 
 		elseif string.match(request, "^[Dd]ecklist") then
+			
+			local decklist = ""
 
 			for _, notebook in pairs(Notes.getNotebookTabs()) do
     				if notebook.title == player.color then
@@ -534,54 +463,71 @@ function parseMessage(msg, position, rotation, owner, player)
     				end
   			end
 
-			WebRequest.put(site..tp()..'getdeck/', JSON.encode({decklist = decklist, exargs = exargs}), function(a) spawndeck(a.text) end)
+			WebRequest.put(site..tp()..'getdeck/', JSON.encode({decklist = decklist, exargs = exargs}), function(a) spawncard(a.text, "deck from "..player.color.." notebook page", player) end)
 
 			--Spawn deck by URL or name
 
 		elseif string.match(request, "^[Dd]eck") and url then
 
-			getdeck(site..tp()..'getdeck/?url='..decktranslate(url)..exargs)
+			getcard(site..tp()..'getdeck/?url='..decktranslate(url)..exargs, "deck with random prints", player)
 
-		elseif string.match(request, "^[Dd]eck") and deck then
+		elseif string.match(request, "^[Dd]eck") then
+			
+			--matches section after deck verb
+			local deck=string.match(request, "^[Dd]eck (.*)")
 
-			getpack(site..tp().."precon/?search="..deck..exargs)
+			getcard(site..tp().."precon/?search="..deck..exargs, deck.." from precons and uploaded decks", player)
 
 		elseif string.match(request, "^[Jj][Ss][Oo][Nn]") and url then
-
-			getdeck(site..tp()..'getdeck/?url='..deckjson(url)..exargs)
+			
+			getcard(site..tp()..'getdeck/?JSON=yes&url='..url..exargs, "deck with set prints", player)
 			
 			--Token cards (and cards in token db)
 
-		elseif string.match(request, "^[Tt]oken") and token then
+		elseif string.match(request, "^[Tt]oken") then
+			
+			--matches the section after the token verb
+			local token=request:match('[Tt]oken (.*)')
+			
 			if not url then
-				gettoken(site..tp().."ttstoken/?name="..token..exargs)
+				getcard(site..tp().."ttstoken/?name="..token..exargs, token.." token(s)", player)
 			elseif string.match(token, "http%S+ (.*)") then
-				gettoken(site..tp().."ttstoken/?name="..token:match("http%S+ (.*)").."&face="..url..exargs)
+				getcard(site..tp().."ttstoken/?name="..token:match("http%S+ (.*)").."&face="..url..exargs, token.." token(s) with custom face", player)
 			end
 
-			--Card commands
+		
+		--Card commands
 
 		elseif url and string.match(url, "scryfall.com/card/") then
-			getcard("set="..url:match("scryfall.com/card/([A-Za-z0-9]+)/*").."&cardnumber="..url:match("scryfall.com/card/[A-Za-z0-9]+/([A-Za-z0-9]+)/*")..exargs)
+			getcard(site..tp().."ttscard/?set="..url:match("scryfall.com/card/([A-Za-z0-9]+)/*").."&cardnumber="..url:match("scryfall.com/card/[A-Za-z0-9]+/([A-Za-z0-9]+)/*")..exargs, player)
 
-		elseif url and string.match(url, "gatherer.wizards.com/Pages/Card") then
-			getcard("multiverseid="..url:match("multiverseid=(.[0-9]+)")..exargs)
+		elseif string.match(request, "^[Cc]ard") then
+			
+			--matches the section after the card verb
+			local card=request:match('[Cc]ard (.*)')
 
-		elseif string.match(request, "^[Cc]ard") and card then
 			if not url then
-				getcard("allprints=yes&name="..card..exargs)
+				getcard(site..tp().."ttscard/?allprints=yes&name="..card..exargs, card, player)
 			elseif card:match("http%S+ (.*)") then
-				getcard("name="..card:match("http%S+ (.*)").."&face="..url..exargs)
+				getcard(site..tp().."ttscard/?name="..card:match("http%S+ (.*)").."&face="..url..exargs, card.." with custom face", player)
 			elseif url then
-				getcard("name=island&face="..url..exargs)
+				getcard(site..tp().."ttscard/?name=island&face="..url..exargs, "island with custom face", player)
 			end
 
-			--Spawn entire set
+		
+		--Spawn entire set
 
-		elseif string.match(request, "^[Ss]et") and set then
-			getcard("allprints=yes&set="..set..exargs)
+		elseif string.match(request, "^[Ss]et") then
+		
+			--matches the section after the set verb
+			local set=request:match('[Ss]et (.*)')
+			
+			if set then
+				getcard(site..tp().."ttscard/?allprints=yes&set="..set..exargs, set, player)
+			end
 
-			--Custom spawn settings
+		
+		--Custom spawn settings
 
 		elseif string.match(request, "^GLOBALBACK") and url then
 
@@ -610,61 +556,66 @@ function parseMessage(msg, position, rotation, owner, player)
 
 		elseif string.match(request, "^[Ss]cale") and scale then
 
-			pscale[owner] = {x=scale, y=scale, z=scale}
-			local setscalestr = "Set "..owner.."'s scale to "..scale
+			pscale[player.steam_name] = {x=scale, y=scale, z=scale}
+			local setscalestr = "Set "..player.steam_name.."'s scale to "..scale
 			Wait.time(function()printToAll(setscalestr)end, 0.5)
 
 		elseif string.match(request, "^[Ss]cale") then
 
-			pscale[owner] = nil
+			pscale[player.steam_name] = nil
 			Wait.time(function()printToAll("Cleared player scale")end, 0.5)
 
 		elseif string.match(request, "^[Bb]ack") and url then
-			backurl[owner] = backcheck(url)
-			if backurl[owner] == nil then
+			backurl[player.steam_name] = backcheck(url)
+			if backurl[player.steam_name] == nil then
 				Wait.time(function()printToAll("Invalid back image provided.")end, 0.5)
 			else
-				local setbackstr = "Set "..owner.."'s back to "..backurl[owner]
+				local setbackstr = "Set "..player.steam_name.."'s back to "..backurl[player.steam_name]
 				Wait.time(function()printToAll(setbackstr)end, 0.5)
 			end
 
 		elseif string.match(request, "^[Bb]ack") then
-			backurl[owner] = nil
+			backurl[player.steam_name] = nil
 			Wait.time(function()printToAll("Cleared back url")end, 0.5)
 
-			--Pack commands
-
-		elseif string.match(request, "^[Pp]ack") and pack then
-
-			getpack(site..tp().."?JSON=yes&set="..pack..exargs)
+		
+		--Pack commands
 
 		elseif string.match(request, "^[Pp]ack") then
+		
+			--matches section after pack verb
+			local pack=string.match(request, "^[Pp]ack (.*)")
 
-			getpack(site..tp().."?JSON=yes"..exargs)
+			getcard(site..tp().."?JSON=yes&set="..pack..exargs, "pack", player)
 
-			--original jumpstart
+		--original jumpstart
+		
 		elseif string.match(request, "^[Jj][Mm][Pp]") then
 
-			getpack(site..tp().."/precon/?JMP=yes"..exargs)
+			getcard(site..tp().."/precon/?JMP=yes"..exargs, "JMP jumpstart (2 packs)", player)
 
-			--avatar jumpstart
+		--avatar jumpstart
+		
 		elseif string.match(request, "^[Tt][Ll][Ee]") then
 
-			getpack(site..tp().."/precon/?TLE=yes"..exargs)
+			getcard(site..tp().."/precon/?TLE=yes"..exargs, "TLE jumpstart (2 packs)", player)
 		
-			--jumpstart 2022
+		--jumpstart 2022
+		
 		elseif string.match(request, "^[Jj]22") then
 
-			getpack(site..tp().."/precon/?J22=yes"..exargs)
+			getcard(site..tp().."/precon/?J22=yes"..exargs, "J22 jumpstart (2 packs)", player)
 
-			--foundations jumpstart
+		
+		--foundations jumpstart
+		
 		elseif string.match(request, "^[Jj]25") then
 
-			getpack(site..tp().."/precon/?J25=yes"..exargs)
+			getcard(site..tp().."/precon/?J25=yes"..exargs, "J25 jumpstart (2 packs)", player)
 
 		elseif request then
 
-			getpack(site..tp().."?JSON=yes&set="..request..exargs)
+			getcard(site..tp().."?JSON=yes&set="..request..exargs, "pack", player)
 
 		end
 

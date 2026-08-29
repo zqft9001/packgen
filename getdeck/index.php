@@ -12,10 +12,32 @@ include('../cardfunctions.php');
 //makes the file output as plain text instead of html
 header('Content-type: text/plain');
 
+$url = null;
+if(isset($gclean["url"])){
+	$url = $gclean["url"];
+}
 $out = "";
 
-if(isset($gclean["url"])){
-	$ch = curl_init($gclean["url"]);
+//translate JSON verb links to correct API call links
+if(isset($gclean["JSON"])){
+
+	$substrs = null;
+
+	//scryfall
+	if(preg_match("/.*scryfall.com\/.*\/decks\/([a-zA-Z0-9\-]+)/", $url, $substrs)){
+		$url = "https://api.scryfall.com/decks/".$substrs[1]."/export/json/";
+	}
+
+	//archidekt
+	if(preg_match("/.*archidekt.com\/decks\/([0-9]+)\/.*/", $url, $substrs)){
+		$url = "https://archidekt.com/api/decks/".$substrs[1]."/";
+	}
+
+
+}
+
+if(isset($url)){
+	$ch = curl_init($url);
 	curl_setopt($ch, CURLOPT_HEADER, 0);
 	curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
 	curl_setopt($ch, CURLOPT_USERAGENT, "GiantweevilDecklistWorker/1.0");
@@ -28,7 +50,7 @@ if(isset($gclean["url"])){
 }
 
 if(preg_match("<!DOCTYPE html>", $out)){
-	echo "Got website instead of text response";
+	echo "Got website instead of text response for ".$url;
 	exit;
 }
 
@@ -37,28 +59,60 @@ $cardsetnum = null;
 $section = null;
 $cardsuuid = null;
 
-//Handle bare decklists separately from Scryfall JSON
-if(isset($gclean["scryfall"])){
+//Handle bare decklists separately from JSON
+if(isset($gclean["JSON"])){
 
 	//Scryfall
-	$cardsjson = json_decode($out, true)["entries"];
-	foreach($cardsjson as $cardsection){
-		foreach($cardsection as $cardjson){
-			for($i = 1; $i <= $cardjson["count"]; $i++){
-				if($cardjson["card_digest"] <> null){
-					$sid = $cardjson["card_digest"]["id"];
-					$section = $cardjson["section"];
-					if($section == "nonlands" or $section == "lands"){
-						$section = "";
+	if(preg_match("/scryfall/", $url)){
+		$cardsjson = json_decode($out, true)["entries"];
+		foreach($cardsjson as $cardsection){
+			foreach($cardsection as $cardjson){
+				for($i = 1; $i <= $cardjson["count"]; $i++){
+					if($cardjson["card_digest"] <> null){
+						$sid = $cardjson["card_digest"]["id"];
+						$section = $cardjson["section"];
+						if($section == "nonlands" or $section == "lands"){
+							$section = null;
+						}
+						$cardsuuid[] = [
+							"uuid" => sid2uuid($sid),
+							"note" => $section,
+						];
 					}
-					$cardsuuid[] = [
-						"uuid" => sid2uuid($sid),
-						"note" => $section,
-					];
 				}
 			}
 		}
 	}
+
+	//archidekt
+	elseif(preg_match("/archidekt/", $url)){
+		$cardsjson = json_decode($out, true)["cards"];
+		foreach($cardsjson as $cardjson){
+			
+			//section handling
+			if($cardjson["categories"][0] == "Commander"){
+				$section = "Commander";
+			}elseif($cardjson["categories"][0] == "Maybeboard"){
+				continue;
+			}elseif($cardjson["categories"][0] == "Sideboard"){
+				$section = "Sideboard";
+			}else{
+				$section = null;
+			}
+			
+			for($i = 1; $i <= $cardjson["quantity"]; $i++){
+				$sid = $cardjson["card"]["uid"];
+				$cardsuuid[] = [
+					"uuid" => sid2uuid($sid),
+					"note" => $section,
+				];
+			}
+		}
+	} else {
+		echo "unsupported url ".$url;
+		exit;
+	}
+
 
 } else {
 
@@ -162,7 +216,7 @@ if(isset($cardsetnum)){
 
 if(isset($cardsuuid)){
 	foreach($cardsuuid as $cuuid){
-		
+
 		$cnd = null;
 
 		$cnd["id"] = $cuuid["uuid"];
@@ -174,6 +228,9 @@ if(isset($cardsuuid)){
 
 $back = null;
 $note = null;
+
+//sort deck by notes, blank notes first and then everything else
+array_multisort(array_column($pack, 'note'), SORT_ASC, $pack);
 
 if(isset($gclean["back"])){
 	$back = $gclean["back"];
