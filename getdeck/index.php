@@ -9,6 +9,9 @@ include('../packgendefs.php');
 //defines card functions
 include('../cardfunctions.php');
 
+//defines moxfield api secret
+include('../moxapi.php');
+
 //makes the file output as plain text instead of html
 header('Content-type: text/plain');
 
@@ -33,6 +36,12 @@ if(isset($gclean["JSON"])){
 		$url = "https://archidekt.com/api/decks/".$substrs[1]."/";
 	}
 
+	//moxfield
+	if(preg_match("/.*moxfield.com\/decks\/(.*)/", $url, $substrs)){
+		$url = "https://api.moxfield.com/v2/decks/all/".$substrs[1]."/";
+		echo "Moxfield is a work in progress";
+		exit;
+	}
 
 }
 
@@ -40,7 +49,13 @@ if(isset($url)){
 	$ch = curl_init($url);
 	curl_setopt($ch, CURLOPT_HEADER, 0);
 	curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
-	curl_setopt($ch, CURLOPT_USERAGENT, "GiantweevilDecklistWorker/1.0");
+	if(preg_match("/moxfield/", $url,)){
+		echo "Moxfield is a work in progress";
+		exit;
+		curl_setopt($ch, CURLOPT_USERAGENT, $moxapi);
+	} else {
+		curl_setopt($ch, CURLOPT_USERAGENT, "GiantweevilDecklistWorker/1.0");
+	}
 
 	$out = curl_exec($ch);
 
