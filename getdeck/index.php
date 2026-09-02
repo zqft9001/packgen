@@ -21,7 +21,7 @@ if(isset($gclean["url"])){
 }
 $out = "";
 
-//translate JSON verb links to correct API call links
+//translate JSON verb links to correct API call links. Assumes anything it doesn't catch will break and exits early.
 if(isset($gclean["JSON"])){
 
 	$substrs = null;
@@ -38,9 +38,40 @@ if(isset($gclean["JSON"])){
 
 	//moxfield
 	if(preg_match("/.*moxfield.com\/decks\/(.*)/", $url, $substrs)){
-		$url = "https://api.moxfield.com/v2/decks/all/".$substrs[1]."/";
 		echo "Moxfield is a work in progress";
 		exit;
+		$url = "https://api.moxfield.com/v2/decks/all/".$substrs[1]."/";
+	}
+
+	if(is_null($substrs)){
+	echo "Deck site currently unsupported for JSON verb";
+	exit;
+	}
+
+} else {
+//Translate Deck verb links into correct links. Assumes anything it doesn't catch is already a link to text.
+	$substrs = null;
+	
+	//tappedout
+	if(preg_match("/.*tappedout.net\/mtg-decks\/([a-zA-Z0-9\-]+)\/.*/", $url, $substrs)){
+		echo "Tappedout is currently blocking requests";
+		exit;
+		$url = "https://tappedout.net/mtg-decks/".$substrs[1]."/?fmt=txt";
+	}
+	
+	//mtggoldfish.com
+	if(preg_match("/.*mtggoldfish.com\/deck\/(.*)/", $url, $substrs)){
+		$url = "https://www.mtggoldfish.com/deck/download/".$substrs[1]."/";
+	}
+
+	//scryfall
+	if(preg_match("/.*scryfall.com\/.*\/decks\/([a-zA-Z0-9\-]+)/", $url, $substrs)){
+		$url = "https://api.scryfall.com/decks/".$substrs[1]."/export/text/";
+	}
+
+	//archidekt
+	if(preg_match("/.*archidekt.com\/decks\/([0-9]+)\/.*/", $url, $substrs)){
+		$url = "https://archidekt.com/api/decks/".$substrs[1]."/";
 	}
 
 }
@@ -128,6 +159,28 @@ if(isset($gclean["JSON"])){
 		exit;
 	}
 
+}elseif(preg_match("/archidekt/", $url)){
+		$cardsjson = json_decode($out, true)["cards"];
+		foreach($cardsjson as $cardjson){
+			
+			//section handling
+			if($cardjson["categories"][0] == "Commander"){
+				$section = "Commander";
+			}elseif($cardjson["categories"][0] == "Maybeboard"){
+				continue;
+			}elseif($cardjson["categories"][0] == "Sideboard"){
+				$section = "Sideboard";
+			}else{
+				$section = null;
+			}
+			
+			for($i = 1; $i <= $cardjson["quantity"]; $i++){
+				$cardnames[] = [
+					"name" => $cardjson["card"]["oracleCard"]["name"],
+					"note" => $section,
+				];
+			}
+		}
 
 } else {
 
@@ -163,7 +216,10 @@ if(isset($gclean["JSON"])){
 
 			for($i = 0; $i < $numname[1]; $i++){
 
-				$cardnames[] = [ "name" => $numname[2], "note" => $section ];
+				$cardnames[] = [ 
+					"name" => $numname[2], 
+					"note" => $section,
+				];
 
 			}
 
@@ -172,7 +228,11 @@ if(isset($gclean["JSON"])){
 
 			for($i = 0; $i < $numname[1]; $i++){
 
-				$cardnames[] = [ "set" => $numname[2], "name" => $numname[3], "note" => $section ];
+				$cardnames[] = [ 
+					"set" => $numname[2], 
+					"name" => $numname[3], 
+					"note" => $section,
+			       	];
 
 			}
 

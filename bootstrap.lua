@@ -218,38 +218,10 @@ end
 --Decksite to text file
 function decktranslate(a)
 
-	--assume the link is to the deck's page if it's not just a text file.
+	--website handles most stuff, #'s break get requests
 
 	a = a:gsub('#.*', '')
 
-	if a:match('tappedout.net') and not a:match('?fmt=txt') then
-		a = a:gsub('?.*', '')
-		a = a:gsub('.cb=%d+','')..'?fmt=txt'
-		return a
-	end
-	
-	if a:match('mtgdecks.net') and not a:match('/txt') then
-		a = a:gsub('.cb=%d+','')..'/txt'
-		return a
-	end
-	
-	if a:match('mtggoldfish.com') and not a:match('/deck/download/') then
-		a = a:gsub('/deck/','/deck/download/')
-		return a
-	end
-
-	if a:match('deckstats.net') and not a:match('?export_txt=1') then
-		a = a..'?export_txt=1'
-		return a
-	end
-
-	if a:match('scryfall.com') and not a:match('/export/text') then
-		a = a:gsub('?.*', '')
-		a = a:gsub('.*/decks/','https://api.scryfall.com/decks/').."/export/text"
-		return a
-	end
-
-	--if it wasn't a supported deck site, probably just a text file.
 	return a
 
 end
