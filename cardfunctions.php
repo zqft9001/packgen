@@ -205,7 +205,7 @@ function sid2uuid($sid){
 		die("Connection failed: " . $conn->connect_error);
 	}
 
-	$sql = "select uuid from cardIdentifiers where cardIdentifiers.scryfallId = \"".$conn->escape_string($sid)."\";";
+	$sql = "select cardIdentifiers.uuid from cardIdentifiers join cards on cardIdentifiers.uuid = cards.uuid where cardIdentifiers.scryfallId = \"".$conn->escape_string($sid)."\" and (cards.side IS NULL OR cards.side = 'a');";
 
 	$result = $conn->query($sql);
 
