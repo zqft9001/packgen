@@ -296,7 +296,24 @@ end
 
 --Tabletop Functions
 
-function onLoad()
+function onSave()
+	local state = {
+		pscale = pscale,
+		globalscale = globalscale,
+		backurl = backurl,
+		globalback = globalback,
+	}
+	return JSON.encode(state)
+end
+
+function onLoad(script_state)
+	local state = JSON.decode(script_state)
+	if state then
+		pscale = state.pscale
+		globalscale = state.globalscale
+		backurl = state.backurl
+		globalback = state.globalback
+	end
 	printToAll(helptext)
 	self.setColorTint({226/255, 177/255, 89/255})
 end
