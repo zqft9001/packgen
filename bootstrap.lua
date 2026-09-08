@@ -345,8 +345,8 @@ function parseMessage(msg, position, rotation, player)
 				"s jmp",
 				"s scale",
 				"s back https://i.imgur.com/hg32UEH.mp4",
-				"s card teysa, envoy of",
-				"s card teysa, orzhov scion",
+				"s deck https://archidekt.com/decks/26206384/tts_test_suite",
+				"s json https://archidekt.com/decks/26206384/tts_test_suite",
 				"s back",
 				"s card giant growth",
 				"s card text/html"
