@@ -1,18 +1,18 @@
-# packgen
+# Importacus
 
-Generates MTG packs based on a MTGJSON database.
+Imports MTG cards and decks to TTS based on details from the MTGJSON database.
 
-Database can be downloaded here (all printings SQL files):
+Database can be downloaded here:
 
-https://mtgjson.com/downloads/all-files/
+https://mtgjson.com/downloads/all-files/#allprintings
 
-You will need to set up a file called db_defs.php in the root directory of the site with the following formatting to use that database:
+You will need to set up production versions of the template files. Filenames are the same minus the "template_" section, fill out the details as appropriate for your setup.
 
-```
-<?php
-define('SERVERNAME', [server]);
-define('USERNAME', [username]);
-define('PASSWORD', [password]);
-define('DBNAME', [database name]);
+You will need to set up a cache of images using Scryfall's image IDs. This can be done with cloudflare workers.
+
+Precon deck JSONs can be downloaded here:
+
+https://mtgjson.com/downloads/all-files/#alldeckfiles
+
 ?>
 ```
