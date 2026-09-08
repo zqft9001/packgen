@@ -13,6 +13,3 @@ You will need to set up a cache of images using Scryfall's image IDs. This can b
 Precon deck JSONs can be downloaded here:
 
 https://mtgjson.com/downloads/all-files/#alldeckfiles
-
-?>
-```
