@@ -11,7 +11,7 @@ self.interactable = false
 
 helptext = [[
 [dc322f][b]S Deck [deck url][/b][FFFFFF] - spawns a deck based on the given url. Autotranslates some links, other links need to be text format.
-[dc322f][b]S JSON [deck url][/b][FFFFFF] - spawns a deck based on the given url, preserves printings. Autotranslates Scryfall links, other links are WIP.
+[dc322f][b]S JSON [deck url][/b][FFFFFF] - spawns a deck based on the given url, preserves printings. Autotranslates Scryfall and Archidekt links.
 [dc322f][b]S Decklist[/b][FFFFFF] - spawns a deck based on your color's notebook page. Accepts most text formats.
 
 [6c71c4][b]S [JMP, J22, J25, or TLE][/b][FFFFFF] - spawns a jumpstart deck (2 packs) based on the code provided.
@@ -23,14 +23,11 @@ helptext = [[
 
 helpdeck = [[
 [dc322f][b]S Deck [deck url][/b][FFFFFF] - spawns a deck based on the given url. Autotranslates some links, other links need to be text format.
-[dc322f][b]S Deck [deck name][/b][FFFFFF] - spawns a preconstructed or user added deck. Randomizes on multiple results.
+[dc322f][b]S Deck [deck name][/b][FFFFFF] - spawns a preconstructed deck. Randomizes on multiple results.
 
 [dc322f][b]S Decklist[/b][FFFFFF] - spawns a deck based on your color's notebook page. Accepts most formats.
 
-[dc322f][b]S Search [deck name][/b][FFFFFF] - searches preconstructed and user added decks.
-[dc322f][b]S Upload [deck url] [deck name][/b][FFFFFF] - uploads a deck from the url with the given name. Follows same rules as deck import for formatting.
-[dc322f][b]S Upload [deck name][/b][FFFFFF] - uploads all currently highlighted cards as a deck with the given name. Preserves printings.
-[dc322f][b]S Delete [deck name][/b][FFFFFF] - deletes a user-added deck.]]
+[dc322f][b]S Search [deck name][/b][FFFFFF] - searches preconstructed decks.]]
 
 helpcustom = [[
 [d33682][b]S Back [image url][/b][FFFFFF] - sets the per-player cardback to [image url]. use without a url to reset to default.
@@ -226,47 +223,7 @@ function decktranslate(a)
 
 end
 
---Deck uploadbyuuid
-
-function uploadbyuuid(request, player)
-	local gm = {}
-
-	for _,j in ipairs(Player[player.color].getSelectedObjects()) do
-		if j.name == "Deck" then
-			for _,i in ipairs(j.getObjects()) do
-				table.insert(gm, i.gm_notes)
-			end
-		elseif j.name == "Card" then
-			table.insert(gm, j.getGMNotes())
-		end
-	end
-
-	local deck = JSON.encode({deckname = request, cards = gm})
-
-	local url = site..tp().."precon/json/"
-
-	log(deck)
-
-	WebRequest.put(url, deck, function(a) preconinfo(a.text) end)
-
-end
-
---deck upload by URL
-function uploadbyurl(url, name)
-	local url = site..tp().."precon/json/?name="..name.."&url="..decktranslate(url)
-	log(url)
-	WebRequest.get(url, function(a) preconinfo(a.text) end)
-end
-
---Deck delete by name
-
-function deletebyname(name)
-	local url = site..tp().."precon/json/?delete=yes&name="..name
-	log(url)
-	WebRequest.get(url, function(a) preconinfo(a.text) end)
-end
-
---deck search by name
+--precon search by name
 
 function searchbyname(name)
 	local url = site..tp().."precon/json/?search="..name
@@ -404,16 +361,6 @@ function parseMessage(msg, position, rotation, player)
 			end
 
 			
-		--delete deck from importer site
-
-		elseif string.match(request, "^[Dd]elete") then
-		
-			--matches section after delete verb
-			local delete=string.match(request, "^[Dd]elete (.*)")
-
-			deletebyname(delete)
-
-		
 		--search for deck on importer site
 
 		elseif string.match(request, "^[Ss]earch") then
@@ -423,22 +370,6 @@ function parseMessage(msg, position, rotation, player)
 
 			searchbyname(search)
 
-		
-		--Upload deck to importer site
-
-		elseif string.match(request, "^[Uu]pload") and url then
-
-			--matches section after upload verb and url
-			local upload = string.match(request, "^[Uu]pload http%S+ (.*)")
-			uploadbyurl(url, upload)
-
-		elseif string.match(request, "^[Uu]pload") then
-			
-			--matches section after upload verb
-			local upload=string.match(request, "^[Uu]pload (.*)")
-
-			uploadbyuuid(upload, player)
-			
 		
 		--spawn deck by list
 
@@ -465,7 +396,7 @@ function parseMessage(msg, position, rotation, player)
 			--matches section after deck verb
 			local deck=string.match(request, "^[Dd]eck (.*)")
 
-			getcard(site..tp().."precon/?search="..deck..exargs, deck.." from precons and uploaded decks", player)
+			getcard(site..tp().."precon/?search="..deck..exargs, deck.." from precons", player)
 
 		elseif string.match(request, "^[Jj][Ss][Oo][Nn]") and url then
 			
